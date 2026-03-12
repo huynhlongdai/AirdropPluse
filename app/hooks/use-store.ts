@@ -4,8 +4,27 @@
  */
 import React from "react";
 import { mockProjects, type Project } from "~/data/projects";
-import { mockTasks, type Task } from "~/data/tasks";
+import { mockTasks, type Task, type TaskExecution } from "~/data/tasks";
 import { mockInboxItems, type InboxItem } from "~/data/inbox";
+import { mockMainWallets } from "~/data/wallets";
+
+/**
+ * Build a fresh TaskExecution entry (not-started) for a sub-wallet.
+ */
+function makeExecution(walletId: string): TaskExecution | null {
+  for (const main of mockMainWallets) {
+    const sub = main.subWallets.find((s) => s.id === walletId);
+    if (sub) {
+      return {
+        walletId: sub.id,
+        walletName: sub.name,
+        address: sub.address,
+        status: "not-started",
+      };
+    }
+  }
+  return null;
+}
 
 interface StoreState {
   projects: Project[];
@@ -23,6 +42,11 @@ interface StoreState {
   updateInboxItem: (item: InboxItem) => void;
   deleteInboxItem: (id: string) => void;
   addInboxItem: (item: InboxItem) => void;
+  /**
+   * Set the wallet assignment for a project and initialise execution entries
+   * for all tasks that belong to that project.
+   */
+  assignWalletsToProject: (projectId: string, walletIds: string[]) => void;
 }
 
 const StoreContext = React.createContext<StoreState | null>(null);
@@ -56,6 +80,30 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   );
   const addInboxItem = React.useCallback((item: InboxItem) => setInboxItems((prev) => [item, ...prev]), []);
 
+  const assignWalletsToProject = React.useCallback(
+    (projectId: string, walletIds: string[]) => {
+      // Update project's participatingWalletIds
+      setProjects((prev) =>
+        prev.map((p) => p.id === projectId ? { ...p, participatingWalletIds: walletIds } : p)
+      );
+      // For each task in this project, ensure every wallet has an execution entry
+      setTasks((prev) =>
+        prev.map((t) => {
+          if (t.projectId !== projectId) return t;
+          const existingIds = new Set(t.executions.map((e) => e.walletId));
+          const toAdd: TaskExecution[] = walletIds
+            .filter((wid) => !existingIds.has(wid))
+            .map(makeExecution)
+            .filter((e): e is TaskExecution => e !== null);
+          // Remove executions for wallets no longer assigned
+          const keep = t.executions.filter((e) => walletIds.includes(e.walletId));
+          return { ...t, executions: [...keep, ...toAdd] };
+        })
+      );
+    },
+    []
+  );
+
   const value: StoreState = React.useMemo(
     () => ({
       projects,
@@ -73,6 +121,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       updateInboxItem,
       deleteInboxItem,
       addInboxItem,
+      assignWalletsToProject,
     }),
     [
       projects,
@@ -87,6 +136,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       updateInboxItem,
       deleteInboxItem,
       addInboxItem,
+      assignWalletsToProject,
     ],
   );
 

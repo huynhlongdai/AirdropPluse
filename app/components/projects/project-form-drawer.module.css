@@ -328,6 +328,89 @@
   color: var(--color-neutral-12);
 }
 
+/* Wallet Picker */
+.walletPicker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 240px;
+  overflow-y: auto;
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-3);
+  padding: var(--space-2);
+  background: var(--color-neutral-2);
+}
+
+.walletPickerItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-2);
+  border: var(--border-size-1) solid transparent;
+  background: var(--color-neutral-3);
+  cursor: pointer;
+  text-align: left;
+  transition: all 120ms var(--ease);
+  width: 100%;
+}
+
+.walletPickerItem:hover {
+  background: var(--color-neutral-4);
+}
+
+.walletPickerItemSelected {
+  border-color: var(--color-accent-7);
+  background: var(--color-accent-3);
+}
+
+.walletPickerCheck {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-1);
+  border: var(--border-size-2) solid var(--color-neutral-7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--color-neutral-1);
+}
+
+.walletPickerCheckSelected {
+  background: var(--color-accent-9);
+  border-color: var(--color-accent-9);
+  color: var(--color-accent-contrast);
+}
+
+.walletPickerInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.walletPickerName {
+  font-size: var(--font-size-1);
+  font-weight: 500;
+  color: var(--color-neutral-12);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.walletPickerAddr {
+  font-size: 0.68rem;
+  font-family: var(--font-code);
+  color: var(--color-neutral-10);
+}
+
+.walletPickerGroup {
+  font-size: var(--font-size-0);
+  color: var(--color-neutral-9);
+  white-space: nowrap;
+}
+
 /* Footer */
 .footer {
   display: flex;

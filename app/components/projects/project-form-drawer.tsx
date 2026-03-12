@@ -1,9 +1,15 @@
 import React from "react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Trash2, Wallet, Check } from "lucide-react";
 import { toast } from "sonner";
 import classNames from "classnames";
 import type { Project, Milestone, Chain, ProjectCategory, ProjectStatus, RiskLevel, Sentiment, FundingRound } from "~/data/projects";
+import { mockMainWallets } from "~/data/wallets";
 import styles from "./project-form-drawer.module.css";
+
+/** Flat list of all sub-wallets across all main wallets */
+const ALL_SUB_WALLETS = mockMainWallets.flatMap((m) =>
+  m.subWallets.map((s) => ({ id: s.id, name: s.name, address: s.address, mainWallet: m.name }))
+);
 
 interface Props {
   project?: Project | null;
@@ -66,6 +72,9 @@ export default function ProjectFormDrawer({ project, onClose, onSave }: Props) {
   const [ecosystems, setEcosystems] = React.useState<string[]>(project?.ecosystem ?? []);
   const [investorInput, setInvestorInput] = React.useState("");
   const [investors, setInvestors] = React.useState<string[]>(project?.investors ?? []);
+  const [participatingWalletIds, setParticipatingWalletIds] = React.useState<string[]>(
+    project?.participatingWalletIds ?? []
+  );
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
   function validate() {
@@ -120,6 +129,7 @@ export default function ProjectFormDrawer({ project, onClose, onSave }: Props) {
       twitterUrl: twitterUrl || undefined,
       discordUrl: discordUrl || undefined,
       telegramUrl: telegramUrl || undefined,
+      participatingWalletIds,
       linkedWallets: project?.linkedWallets ?? [],
       linkedIdentities: project?.linkedIdentities ?? [],
       updates: project?.updates ?? [],
@@ -130,6 +140,12 @@ export default function ProjectFormDrawer({ project, onClose, onSave }: Props) {
     onSave(saved);
     toast.success(isEdit ? `"${saved.name}" updated successfully.` : `"${saved.name}" added to your projects.`);
     onClose();
+  }
+
+  function toggleWallet(id: string) {
+    setParticipatingWalletIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
   }
 
   function toggleChain(c: string) {
@@ -442,6 +458,44 @@ export default function ProjectFormDrawer({ project, onClose, onSave }: Props) {
               <input className={styles.input} style={{ flex: 1 }} value={newMilestoneTitle} onChange={(e) => setNewMilestoneTitle(e.target.value)} placeholder="Milestone title..." />
               <input type="date" className={styles.input} value={newMilestoneDate} onChange={(e) => setNewMilestoneDate(e.target.value)} />
               <button type="button" className={styles.addRowBtn} onClick={addMilestone}><Plus size={14} /> Add</button>
+            </div>
+          </div>
+
+          {/* Participating Wallets */}
+          <div className={styles.section}>
+            <div className={styles.sectionTitle}>Participating Wallets</div>
+            <div className={styles.field}>
+              <label className={styles.label}>
+                <Wallet size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+                Select wallets that will participate in this project
+              </label>
+              <div className={styles.walletPicker}>
+                {ALL_SUB_WALLETS.map((w) => {
+                  const selected = participatingWalletIds.includes(w.id);
+                  return (
+                    <button
+                      key={w.id}
+                      type="button"
+                      className={classNames(styles.walletPickerItem, { [styles.walletPickerItemSelected]: selected })}
+                      onClick={() => toggleWallet(w.id)}
+                    >
+                      <div className={classNames(styles.walletPickerCheck, { [styles.walletPickerCheckSelected]: selected })}>
+                        {selected && <Check size={10} />}
+                      </div>
+                      <div className={styles.walletPickerInfo}>
+                        <span className={styles.walletPickerName}>{w.name}</span>
+                        <span className={styles.walletPickerAddr}>{w.address.slice(0, 8)}...{w.address.slice(-4)}</span>
+                      </div>
+                      <span className={styles.walletPickerGroup}>{w.mainWallet}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {participatingWalletIds.length > 0 && (
+                <p style={{ fontSize: "var(--font-size-0)", color: "var(--color-success-11)", margin: 0 }}>
+                  ✓ {participatingWalletIds.length} wallet{participatingWalletIds.length !== 1 ? "s" : ""} selected
+                </p>
+              )}
             </div>
           </div>
 

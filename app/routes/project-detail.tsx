@@ -23,11 +23,16 @@ import {
   Pencil,
   Trash2,
   Plus,
+  Copy,
+  Check,
+  UserPlus,
+  UserMinus,
 } from "lucide-react";
 import classNames from "classnames";
 import { toast } from "sonner";
 import type { Route } from "./+types/project-detail";
 import type { Project } from "~/data/projects";
+import { mockMainWallets } from "~/data/wallets";
 import { useStore } from "~/hooks/use-store";
 import type { WalletTaskStatus } from "~/data/tasks";
 import ProjectFormDrawer from "~/components/projects/project-form-drawer";
@@ -65,7 +70,7 @@ type Tab = "general" | "tasks" | "wallets" | "updates";
 export default function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { projects, tasks, updateProject, deleteProject } = useStore();
+  const { projects, tasks, updateProject, deleteProject, assignWalletsToProject } = useStore();
   const [activeTab, setActiveTab] = React.useState<Tab>("general");
   const [showEditForm, setShowEditForm] = React.useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
@@ -269,7 +274,7 @@ export default function ProjectDetail() {
         <div className={styles.tabContent}>
           {activeTab === "general" && <GeneralTab project={project} />}
           {activeTab === "tasks" && <TasksTab project={project} onUpdate={updateProject} />}
-          {activeTab === "wallets" && <WalletsTab project={project} projectTasks={tasks.filter((t) => t.projectId === project.id)} />}
+          {activeTab === "wallets" && <WalletsTab project={project} projectTasks={tasks.filter((t) => t.projectId === project.id)} onAssignWallets={(ids) => assignWalletsToProject(project.id, ids)} />}
           {activeTab === "updates" && <UpdatesTab project={project} />}
         </div>
       </div>
@@ -587,33 +592,61 @@ function TasksTab({ project, onUpdate }: TasksTabProps) {
 
 import type { Task } from "~/data/tasks";
 
-function WalletsTab({ project, projectTasks }: { project: Project; projectTasks: Task[] }) {
-  // Build wallet participation from live task executions
-  const walletMap = React.useMemo(() => {
+/** All sub-wallets across all main wallets — used for assignment picker */
+const ALL_SUB_WALLETS = mockMainWallets.flatMap((m) =>
+  m.subWallets.map((s) => ({ id: s.id, name: s.name, address: s.address, mainWallet: m.name, status: s.status }))
+);
+
+const STATUS_COLOR: Record<string, string> = {
+  completed: "var(--color-success-9)",
+  "in-progress": "var(--color-accent-9)",
+  "not-started": "var(--color-neutral-6)",
+  failed: "var(--color-error-9)",
+};
+
+function WalletsTab({
+  project,
+  projectTasks,
+  onAssignWallets,
+}: {
+  project: Project;
+  projectTasks: Task[];
+  onAssignWallets: (ids: string[]) => void;
+}) {
+  const [showPicker, setShowPicker] = React.useState(false);
+  const [copiedId, setCopiedId] = React.useState<string | null>(null);
+
+  const participatingIds = project.participatingWalletIds ?? [];
+  const participatingWallets = ALL_SUB_WALLETS.filter((w) => participatingIds.includes(w.id));
+  const availableWallets = ALL_SUB_WALLETS.filter((w) => !participatingIds.includes(w.id));
+
+  function copyAddress(addr: string, id: string) {
+    navigator.clipboard.writeText(addr).then(() => {
+      setCopiedId(id);
+      toast.success("Address copied!");
+      setTimeout(() => setCopiedId(null), 1500);
+    });
+  }
+
+  function toggleWallet(walletId: string) {
+    const updated = participatingIds.includes(walletId)
+      ? participatingIds.filter((id) => id !== walletId)
+      : [...participatingIds, walletId];
+    onAssignWallets(updated);
+    toast.success(participatingIds.includes(walletId) ? "Wallet removed from project." : "Wallet assigned to project!");
+  }
+
+  // Build per-wallet task execution summary
+  const walletSummaryMap = React.useMemo(() => {
     const map = new Map<string, {
-      walletId: string;
-      walletName: string;
-      address: string;
-      completed: number;
-      total: number;
-      failed: number;
+      completed: number; total: number; failed: number;
       lastInteraction?: string;
       statusByTask: { taskId: string; taskTitle: string; status: WalletTaskStatus | null }[];
     }>();
-
     projectTasks.forEach((task) => {
       task.executions.forEach((exec) => {
         if (!map.has(exec.walletId)) {
-          map.set(exec.walletId, {
-            walletId: exec.walletId,
-            walletName: exec.walletName,
-            address: exec.address,
-            completed: 0,
-            total: 0,
-            failed: 0,
-            lastInteraction: exec.completedAt,
-            statusByTask: [],
-          });
+          map.set(exec.walletId, { completed: 0, total: 0, failed: 0, statusByTask: [] });
         }
         const entry = map.get(exec.walletId)!;
         entry.total += 1;
@@ -627,115 +660,140 @@ function WalletsTab({ project, projectTasks }: { project: Project; projectTasks:
         entry.statusByTask.push({ taskId: task.id, taskTitle: task.title, status: exec.status });
       });
     });
-
-    return Array.from(map.values());
+    return map;
   }, [projectTasks]);
-
-  // Also include wallets from linkedWallets that don't have task data
-  const legacyOnly = project.linkedWallets.filter(
-    (w) => !walletMap.find((m) => m.walletId === w.walletId)
-  );
-
-  const STATUS_COLOR: Record<string, string> = {
-    completed: "var(--color-success-9)",
-    "in-progress": "var(--color-accent-9)",
-    "not-started": "var(--color-neutral-6)",
-    failed: "var(--color-error-9)",
-  };
 
   return (
     <div className={styles.walletsTab}>
-      {walletMap.length > 0 ? (
-        <section className={styles.section}>
+      {/* Wallet assignment section */}
+      <section className={styles.section}>
+        <div className={styles.walletSectionHeader}>
           <h2 className={styles.sectionTitle}>
-            <Wallet size={16} /> Wallet Participation ({walletMap.length} wallets)
+            <Wallet size={16} /> Participating Wallets ({participatingIds.length})
           </h2>
-          <div className={styles.walletCards}>
-            {walletMap.map((w) => {
-              const pct = w.total > 0 ? Math.round((w.completed / w.total) * 100) : 0;
-              return (
-                <div key={w.walletId} className={styles.walletCard}>
-                  <div className={styles.walletCardHeader}>
-                    <div className={styles.walletAvatar}><Wallet size={18} /></div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className={styles.walletName}>{w.walletName}</div>
-                      <div className={styles.walletAddress}>{w.address}</div>
-                    </div>
-                    <div className={classNames(styles.walletPct, { [styles.walletPctFull]: pct === 100 })}>{pct}%</div>
-                  </div>
-                  <div className={styles.walletProgress}>
-                    <div className={styles.walletProgressBar}>
-                      <div
-                        className={styles.walletProgressFill}
-                        style={{
-                          width: `${pct}%`,
-                          background: pct === 100 ? "var(--color-success-9)" : "var(--color-accent-9)",
-                        }}
-                      />
-                    </div>
-                    <span>{w.completed}/{w.total} tasks</span>
-                    {w.failed > 0 && (
-                      <span style={{ color: "var(--color-error-11)", fontSize: "0.72rem", fontWeight: 600 }}>
-                        {w.failed} failed
-                      </span>
-                    )}
-                  </div>
-                  {/* Task status row */}
-                  <div className={styles.taskStatusRow}>
-                    {w.statusByTask.map(({ taskId, taskTitle, status }) => (
-                      <div
-                        key={taskId}
-                        className={styles.taskStatusDot}
-                        style={{ background: status ? STATUS_COLOR[status] : "var(--color-neutral-5)" }}
-                        title={`${taskTitle}: ${status ?? "not assigned"}`}
-                      />
-                    ))}
-                  </div>
-                  {w.lastInteraction && (
-                    <div className={styles.walletLastSeen}>
-                      Last interaction: {new Date(w.lastInteraction).toLocaleDateString()}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <button
+            className={styles.assignWalletBtn}
+            onClick={() => setShowPicker((v) => !v)}
+            type="button"
+          >
+            {showPicker ? <UserMinus size={13} /> : <UserPlus size={13} />}
+            {showPicker ? "Close Picker" : "Assign Wallets"}
+          </button>
+        </div>
 
-            {legacyOnly.map((w) => {
-              const pct = w.totalTasks > 0 ? Math.round((w.tasksCompleted / w.totalTasks) * 100) : 0;
+        {/* Wallet picker */}
+        {showPicker && (
+          <div className={styles.walletPickerDropdown}>
+            <div className={styles.pickerSection}>
+              <div className={styles.pickerSectionLabel}>Available Wallets</div>
+              {availableWallets.length === 0 ? (
+                <p className={styles.pickerEmpty}>All wallets are already assigned.</p>
+              ) : (
+                availableWallets.map((w) => (
+                  <button
+                    key={w.id}
+                    type="button"
+                    className={styles.pickerItem}
+                    onClick={() => toggleWallet(w.id)}
+                  >
+                    <div className={styles.pickerItemAvatar}><Wallet size={12} /></div>
+                    <div className={styles.pickerItemInfo}>
+                      <span className={styles.pickerItemName}>{w.name}</span>
+                      <span className={styles.pickerItemAddr}>{w.address.slice(0, 10)}...{w.address.slice(-4)}</span>
+                    </div>
+                    <span className={styles.pickerItemGroup}>{w.mainWallet}</span>
+                    <Plus size={13} className={styles.pickerAddIcon} />
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Participating wallet cards */}
+        {participatingWallets.length === 0 ? (
+          <div className={styles.emptyTab}>
+            <Wallet size={32} />
+            <p>No wallets assigned yet. Click &ldquo;Assign Wallets&rdquo; to add wallets to this project.</p>
+          </div>
+        ) : (
+          <div className={styles.walletCards}>
+            {participatingWallets.map((w) => {
+              const summary = walletSummaryMap.get(w.id);
+              const pct = summary && summary.total > 0 ? Math.round((summary.completed / summary.total) * 100) : 0;
               return (
-                <div key={w.walletId} className={styles.walletCard}>
+                <div key={w.id} className={styles.walletCard}>
                   <div className={styles.walletCardHeader}>
-                    <div className={styles.walletAvatar}><Wallet size={18} /></div>
-                    <div>
-                      <div className={styles.walletName}>{w.walletName}</div>
-                      <div className={styles.walletAddress}>{w.address}</div>
+                    <div className={styles.walletAvatar}><Wallet size={16} /></div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className={styles.walletName}>{w.name}</div>
+                      <div className={styles.walletAddressRow}>
+                        <span className={styles.walletAddress}>
+                          {w.address.slice(0, 10)}...{w.address.slice(-4)}
+                        </span>
+                        <button
+                          type="button"
+                          className={styles.copyBtn}
+                          onClick={() => copyAddress(w.address, w.id)}
+                          title="Copy address"
+                        >
+                          {copiedId === w.id ? <Check size={11} /> : <Copy size={11} />}
+                        </button>
+                      </div>
                     </div>
-                    <div className={styles.walletPct}>{pct}%</div>
+                    <div className={classNames(styles.walletPct, { [styles.walletPctFull]: pct === 100 })}>
+                      {summary ? `${summary.completed}/${summary.total}` : "—"}
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.removeWalletBtn}
+                      onClick={() => toggleWallet(w.id)}
+                      title="Remove from project"
+                    >
+                      <UserMinus size={13} />
+                    </button>
                   </div>
-                  <div className={styles.walletProgress}>
-                    <div className={styles.walletProgressBar}>
-                      <div className={styles.walletProgressFill} style={{ width: `${pct}%` }} />
-                    </div>
-                    <span>{w.tasksCompleted}/{w.totalTasks} tasks</span>
-                  </div>
-                  {w.lastInteraction && (
-                    <div className={styles.walletLastSeen}>
-                      Last interaction: {new Date(w.lastInteraction).toLocaleDateString()}
-                    </div>
+
+                  {summary && summary.total > 0 && (
+                    <>
+                      <div className={styles.walletProgress}>
+                        <div className={styles.walletProgressBar}>
+                          <div
+                            className={styles.walletProgressFill}
+                            style={{
+                              width: `${pct}%`,
+                              background: pct === 100 ? "var(--color-success-9)" : "var(--color-accent-9)",
+                            }}
+                          />
+                        </div>
+                        {summary.failed > 0 && (
+                          <span className={styles.failedBadge}>{summary.failed} failed</span>
+                        )}
+                      </div>
+                      <div className={styles.taskStatusRow}>
+                        {summary.statusByTask.map(({ taskId, taskTitle, status }) => (
+                          <div
+                            key={taskId}
+                            className={styles.taskStatusDot}
+                            style={{ background: status ? STATUS_COLOR[status] : "var(--color-neutral-5)" }}
+                            title={`${taskTitle}: ${status ?? "not assigned"}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {!summary && (
+                    <div className={styles.walletNoTasks}>No task executions yet</div>
                   )}
                 </div>
               );
             })}
           </div>
-        </section>
-      ) : (
-        <div className={styles.emptyTab}>
-          <Wallet size={40} />
-          <p>No wallet executions found for this project&#39;s tasks.</p>
-          <p style={{ fontSize: "0.78rem", color: "var(--color-neutral-8)" }}>Assign wallets to tasks in the Execution tab to track progress here.</p>
-        </div>
-      )}
+        )}
+      </section>
 
+      {/* Linked Identities */}
       {project.linkedIdentities.length > 0 && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>

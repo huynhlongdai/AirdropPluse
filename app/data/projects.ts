@@ -116,6 +116,9 @@ export interface Project {
   twitterUrl?: string;
   discordUrl?: string;
   telegramUrl?: string;
+  /** IDs of SubWallets participating in this project */
+  participatingWalletIds: string[];
+  // -- end participation --
   linkedWallets: LinkedWallet[];
   linkedIdentities: LinkedIdentity[];
   updates: ProjectUpdate[];
@@ -170,6 +173,7 @@ export const mockProjects: Project[] = [
     sourceUrl: "https://zksync.io",
     twitterUrl: "https://twitter.com/zksync",
     discordUrl: "https://discord.gg/zksync",
+    participatingWalletIds: ["sub-1a", "sub-1b"],
     linkedWallets: [
       { walletId: "w1", walletName: "Main Wallet", address: "0x1a2b...3c4d", tasksCompleted: 2, totalTasks: 5, lastInteraction: "2024-01-16" },
       { walletId: "w2", walletName: "Farming Wallet 1", address: "0x5e6f...7a8b", tasksCompleted: 1, totalTasks: 5, lastInteraction: "2024-01-12" },
@@ -227,6 +231,7 @@ export const mockProjects: Project[] = [
     isHot: true,
     sourceUrl: "https://layerzero.network",
     twitterUrl: "https://twitter.com/LayerZero_Labs",
+    participatingWalletIds: ["sub-1a", "sub-2a"],
     linkedWallets: [
       { walletId: "w1", walletName: "Main Wallet", address: "0x1a2b...3c4d", tasksCompleted: 3, totalTasks: 4, lastInteraction: "2024-01-25" },
     ],
@@ -282,6 +287,7 @@ export const mockProjects: Project[] = [
     sourceUrl: "https://starknet.io",
     twitterUrl: "https://twitter.com/Starknet",
     discordUrl: "https://discord.gg/starknet",
+    participatingWalletIds: ["sub-1a", "sub-2a"],
     linkedWallets: [
       { walletId: "w2", walletName: "Farming Wallet 1", address: "0x5e6f...7a8b", tasksCompleted: 2, totalTasks: 5, lastInteraction: "2024-01-13" },
       { walletId: "w3", walletName: "Farming Wallet 2", address: "0x9c0d...1e2f", tasksCompleted: 0, totalTasks: 5 },
@@ -319,6 +325,7 @@ export const mockProjects: Project[] = [
     expiryDate: "2024-02-28",
     priority: "low",
     sourceUrl: "https://galxe.com",
+    participatingWalletIds: ["sub-1a", "sub-1b", "sub-2a"],
     linkedWallets: [
       { walletId: "w1", walletName: "Main Wallet", address: "0x1a2b...3c4d", tasksCompleted: 2, totalTasks: 4, lastInteraction: "2024-01-18" },
     ],
@@ -368,6 +375,7 @@ export const mockProjects: Project[] = [
     sourceUrl: "https://sui.io",
     twitterUrl: "https://twitter.com/SuiNetwork",
     discordUrl: "https://discord.gg/sui",
+    participatingWalletIds: ["sub-3a"],
     linkedWallets: [],
     linkedIdentities: [],
     updates: [
@@ -406,6 +414,7 @@ export const mockProjects: Project[] = [
     priority: "medium",
     sourceUrl: "https://base.org",
     twitterUrl: "https://twitter.com/base",
+    participatingWalletIds: ["sub-1b"],
     linkedWallets: [
       { walletId: "w1", walletName: "Main Wallet", address: "0x1a2b...3c4d", tasksCompleted: 2, totalTasks: 4, lastInteraction: "2024-01-19" },
     ],
