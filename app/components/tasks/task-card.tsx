@@ -8,6 +8,7 @@ import styles from "./task-card.module.css";
 interface TaskCardProps {
   task: Task;
   className?: string;
+  onClick?: () => void;
 }
 
 const TYPE_ICONS: Record<Task["type"], React.ReactNode> = {
@@ -35,7 +36,7 @@ function formatDeadline(dateStr: string) {
   return { label: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }), urgent: false };
 }
 
-export default function TaskCard({ task, className }: TaskCardProps) {
+export default function TaskCard({ task, className, onClick }: TaskCardProps) {
   const doneCount = task.executions.filter((e) => e.status === "done").length;
   const totalCount = task.executions.length;
   const progress = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
@@ -46,6 +47,10 @@ export default function TaskCard({ task, className }: TaskCardProps) {
       className={classNames(styles.card, className, {
         [styles.cardOverdue]: task.isOverdue,
       })}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") onClick(); } : undefined}
     >
       <div className={styles.cardHeader}>
         <span className={classNames(styles.title, { [styles.titleCompleted]: isComplete })}>

@@ -6,6 +6,7 @@ import styles from "./task-calendar-view.module.css";
 
 interface TaskCalendarViewProps {
   tasks: Task[];
+  onTaskClick?: (task: Task) => void;
 }
 
 interface CalendarEvent {
@@ -14,7 +15,7 @@ interface CalendarEvent {
   isUrgent: boolean;
 }
 
-export default function TaskCalendarView({ tasks }: TaskCalendarViewProps) {
+export default function TaskCalendarView({ tasks, onTaskClick }: TaskCalendarViewProps) {
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedDate, setSelectedDate] = React.useState<number | null>(null);
 
@@ -152,7 +153,7 @@ export default function TaskCalendarView({ tasks }: TaskCalendarViewProps) {
           <div className={styles.noEvents}>No tasks with deadlines this month.</div>
         ) : (
           selectedEvents.map(({ task, date, isUrgent }) => (
-            <div key={task.id} className={styles.eventItem}>
+            <div key={task.id} className={styles.eventItem} onClick={onTaskClick ? () => onTaskClick(task) : undefined} style={onTaskClick ? { cursor: "pointer" } : undefined}>
               <div
                 className={classNames(styles.eventDateBadge, {
                   [styles.eventUrgentBadge]: isUrgent,

@@ -1,5 +1,5 @@
 import React from "react";
-import { List, LayoutGrid, CalendarDays, AlertCircle, Zap, CheckCircle2, RefreshCw, Clock } from "lucide-react";
+import { List, LayoutGrid, CalendarDays, AlertCircle } from "lucide-react";
 import classNames from "classnames";
 import type { Route } from "./+types/tasks";
 import { mockTasks } from "~/data/tasks";
@@ -7,6 +7,7 @@ import type { Task } from "~/data/tasks";
 import TaskListView from "~/components/tasks/task-list-view";
 import TaskBoardView from "~/components/tasks/task-board-view";
 import TaskCalendarView from "~/components/tasks/task-calendar-view";
+import TaskDetailPanel from "~/components/tasks/task-detail-panel";
 import styles from "./tasks.module.css";
 
 export function meta({}: Route.MetaArgs) {
@@ -26,6 +27,8 @@ export default function Tasks() {
   const [filterPriority, setFilterPriority] = React.useState("all");
   const [todayFocus, setTodayFocus] = React.useState(false);
   const [search, setSearch] = React.useState("");
+  const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
+  const [tasks, setTasks] = React.useState<Task[]>(mockTasks);
 
   const projects = React.useMemo(() => {
     const names = mockTasks.map((t) => t.projectName).filter(Boolean) as string[];
@@ -33,38 +36,47 @@ export default function Tasks() {
   }, []);
 
   const filteredTasks = React.useMemo(() => {
-    let tasks: Task[] = mockTasks;
+    let filtered: Task[] = tasks;
     if (search) {
       const q = search.toLowerCase();
-      tasks = tasks.filter(
+      filtered = filtered.filter(
         (t) =>
           t.title.toLowerCase().includes(q) ||
           (t.projectName?.toLowerCase().includes(q) ?? false) ||
           (t.description?.toLowerCase().includes(q) ?? false),
       );
     }
-    if (filterType !== "all") tasks = tasks.filter((t) => t.type === filterType);
-    if (filterStatus !== "all") tasks = tasks.filter((t) => t.status === filterStatus);
-    if (filterProject !== "all") tasks = tasks.filter((t) => t.projectName === filterProject);
-    if (filterPriority !== "all") tasks = tasks.filter((t) => t.priority === filterPriority);
+    if (filterType !== "all") filtered = filtered.filter((t) => t.type === filterType);
+    if (filterStatus !== "all") filtered = filtered.filter((t) => t.status === filterStatus);
+    if (filterProject !== "all") filtered = filtered.filter((t) => t.projectName === filterProject);
+    if (filterPriority !== "all") filtered = filtered.filter((t) => t.priority === filterPriority);
     if (todayFocus) {
       const now = Date.now();
-      tasks = tasks.filter((t) => {
+      filtered = filtered.filter((t) => {
         if (t.recurring === "daily") return true;
         if (!t.deadline) return false;
         const diff = new Date(t.deadline).getTime() - now;
         return diff > 0 && diff < 24 * 60 * 60 * 1000;
       });
     }
-    return tasks;
-  }, [search, filterType, filterStatus, filterProject, filterPriority, todayFocus]);
+    return filtered;
+  }, [tasks, search, filterType, filterStatus, filterProject, filterPriority, todayFocus]);
 
   // Stats
-  const total = mockTasks.length;
-  const completed = mockTasks.filter((t) => t.status === "completed").length;
-  const inProgress = mockTasks.filter((t) => t.status === "in-progress").length;
-  const overdue = mockTasks.filter((t) => t.isOverdue).length;
-  const daily = mockTasks.filter((t) => t.recurring === "daily").length;
+  const total = tasks.length;
+  const completed = tasks.filter((t) => t.status === "completed").length;
+  const inProgress = tasks.filter((t) => t.status === "in-progress").length;
+  const overdue = tasks.filter((t) => t.isOverdue).length;
+  const daily = tasks.filter((t) => t.recurring === "daily").length;
+
+  function handleTaskClick(task: Task) {
+    setSelectedTask(task);
+  }
+
+  function handleTaskUpdate(updatedTask: Task) {
+    setTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
+    setSelectedTask(updatedTask);
+  }
 
   return (
     <main className={styles.tasks}>
@@ -203,13 +215,22 @@ export default function Tasks() {
         {filteredTasks.length === 0 ? (
           <div className={styles.emptyState}>No tasks match your filters.</div>
         ) : view === "list" ? (
-          <TaskListView tasks={filteredTasks} />
+          <TaskListView tasks={filteredTasks} onTaskClick={handleTaskClick} />
         ) : view === "board" ? (
-          <TaskBoardView tasks={filteredTasks} />
+          <TaskBoardView tasks={filteredTasks} onTaskClick={handleTaskClick} />
         ) : (
-          <TaskCalendarView tasks={filteredTasks} />
+          <TaskCalendarView tasks={filteredTasks} onTaskClick={handleTaskClick} />
         )}
       </div>
+
+      {/* Task Detail Panel */}
+      {selectedTask && (
+        <TaskDetailPanel
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onTaskUpdate={handleTaskUpdate}
+        />
+      )}
     </main>
   );
 }

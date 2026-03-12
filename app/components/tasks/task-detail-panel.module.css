@@ -1,0 +1,581 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 200;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.panel {
+  width: min(680px, 100vw);
+  height: 100vh;
+  background: var(--color-neutral-2);
+  border-left: 1px solid var(--color-neutral-4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideIn 0.2s var(--ease-out);
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ── Header ───────────────────────────────── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-neutral-4);
+  background: var(--color-neutral-1);
+  flex-shrink: 0;
+}
+
+.headerContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--color-neutral-9);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.closeButton:hover {
+  background: var(--color-neutral-4);
+  color: var(--color-neutral-12);
+}
+
+.title {
+  font: var(--font-heading);
+  font-size: 1rem;
+  color: var(--color-neutral-12);
+  margin: 0 0 var(--space-2);
+  line-height: 1.4;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+/* ── Badges ───────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-round);
+  font: var(--font-caption);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.badgeOnchain { background: color-mix(in srgb, var(--violet-9) 15%, transparent); color: var(--violet-11); border: 1px solid color-mix(in srgb, var(--violet-9) 25%, transparent); }
+.badgeSocial { background: color-mix(in srgb, var(--sky-9) 15%, transparent); color: var(--sky-11); border: 1px solid color-mix(in srgb, var(--sky-9) 25%, transparent); }
+.badgeDaily { background: color-mix(in srgb, var(--teal-9) 15%, transparent); color: var(--teal-11); border: 1px solid color-mix(in srgb, var(--teal-9) 25%, transparent); }
+.badgeOneTime { background: color-mix(in srgb, var(--amber-9) 15%, transparent); color: var(--amber-11); border: 1px solid color-mix(in srgb, var(--amber-9) 25%, transparent); }
+
+.statusBadge { padding: 2px 10px; border-radius: var(--radius-round); font: var(--font-caption); font-size: 0.7rem; font-weight: 600; }
+.statusBacklog { background: var(--color-neutral-4); color: var(--color-neutral-10); }
+.statusInProgress { background: color-mix(in srgb, var(--color-accent-9) 15%, transparent); color: var(--color-accent-11); }
+.statusReview { background: color-mix(in srgb, var(--amber-9) 15%, transparent); color: var(--amber-11); }
+.statusCompleted { background: color-mix(in srgb, var(--color-success-9) 15%, transparent); color: var(--color-success-11); }
+
+.priorityDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.priorityHigh { background: var(--color-error-9); }
+.priorityMedium { background: var(--amber-9); }
+.priorityLow { background: var(--color-success-9); }
+
+.overdueTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-error-11);
+  background: color-mix(in srgb, var(--color-error-9) 12%, transparent);
+  padding: 2px 8px;
+  border-radius: var(--radius-round);
+}
+
+/* ── Tabs ─────────────────────────────────── */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-neutral-4);
+  background: var(--color-neutral-1);
+  flex-shrink: 0;
+}
+
+.tab {
+  padding: var(--space-3) var(--space-4);
+  font: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-neutral-9);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.tab:hover { color: var(--color-neutral-12); }
+.tabActive {
+  color: var(--color-accent-11);
+  border-bottom-color: var(--color-accent-9);
+}
+
+/* ── Body ─────────────────────────────────── */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ── Sections ─────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font: var(--font-caption);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-neutral-9);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.description {
+  font: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-neutral-11);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Guide link ───────────────────────────── */
+.guideLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-accent-11);
+  text-decoration: none;
+  padding: var(--space-2) var(--space-3);
+  background: color-mix(in srgb, var(--color-accent-9) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-9) 20%, transparent);
+  border-radius: var(--radius-3);
+  transition: background 0.15s;
+  width: fit-content;
+}
+.guideLink:hover { background: color-mix(in srgb, var(--color-accent-9) 18%, transparent); }
+
+/* ── Meta grid ────────────────────────────── */
+.metaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  background: var(--color-neutral-3);
+  border-radius: var(--radius-3);
+  border: 1px solid var(--color-neutral-4);
+}
+
+.metaLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-neutral-9);
+}
+
+.metaValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-neutral-12);
+}
+
+.metaValueWarning { color: var(--amber-11); }
+.metaValueError { color: var(--color-error-11); }
+.metaValueSuccess { color: var(--color-success-11); }
+
+/* ── Tags ─────────────────────────────────── */
+.tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tag {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-neutral-10);
+  background: var(--color-neutral-3);
+  border: 1px solid var(--color-neutral-5);
+  border-radius: var(--radius-round);
+  padding: 2px 10px;
+}
+
+/* ── Progress summary ─────────────────────── */
+.progressSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-3);
+  border-radius: var(--radius-3);
+  border: 1px solid var(--color-neutral-4);
+}
+
+.progressInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.progressLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-neutral-11);
+}
+
+.progressBar {
+  height: 6px;
+  background: var(--color-neutral-5);
+  border-radius: var(--radius-round);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-accent-9);
+  border-radius: var(--radius-round);
+  transition: width 0.3s var(--ease-out);
+}
+
+.progressFillComplete { background: var(--color-success-9); }
+
+.progressPercent {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-12);
+  flex-shrink: 0;
+}
+
+/* ── Subtasks ─────────────────────────────── */
+.subtaskList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.subtaskItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
+  background: var(--color-neutral-3);
+  border-radius: var(--radius-3);
+  border: 1px solid var(--color-neutral-4);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.subtaskItem:hover { background: var(--color-neutral-4); }
+
+.subtaskCheckbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 2px solid var(--color-neutral-6);
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.subtaskCheckboxDone {
+  background: var(--color-success-9);
+  border-color: var(--color-success-9);
+}
+
+.subtaskTitle {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--color-neutral-11);
+  transition: color 0.15s;
+}
+
+.subtaskTitleDone {
+  color: var(--color-neutral-8);
+  text-decoration: line-through;
+}
+
+.subtaskDate {
+  font-size: 0.72rem;
+  color: var(--color-neutral-8);
+  flex-shrink: 0;
+}
+
+/* ── Wallet executions ────────────────────── */
+.walletList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.walletItem {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-3);
+  border-radius: var(--radius-3);
+  border: 1px solid var(--color-neutral-4);
+}
+
+.walletItem.walletDone { border-color: color-mix(in srgb, var(--color-success-9) 30%, transparent); }
+.walletItem.walletFailed { border-color: color-mix(in srgb, var(--color-error-9) 30%, transparent); }
+
+.walletInfo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+.walletName {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-neutral-12);
+}
+
+.walletAddress {
+  font-size: 0.72rem;
+  font-family: monospace;
+  color: var(--color-neutral-9);
+}
+
+.walletMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: 2px;
+}
+
+.walletMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--color-neutral-9);
+}
+
+.txLink {
+  color: var(--color-accent-11);
+  text-decoration: none;
+  font-family: monospace;
+  font-size: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.txLink:hover { text-decoration: underline; }
+
+.walletStatusBadge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-round);
+  flex-shrink: 0;
+}
+.walletStatusPending { background: var(--color-neutral-4); color: var(--color-neutral-10); }
+.walletStatusDone { background: color-mix(in srgb, var(--color-success-9) 15%, transparent); color: var(--color-success-11); }
+.walletStatusFailed { background: color-mix(in srgb, var(--color-error-9) 15%, transparent); color: var(--color-error-11); }
+
+.walletNoteInput {
+  width: 100%;
+  font-size: 0.78rem;
+  font-family: inherit;
+  color: var(--color-neutral-11);
+  background: var(--color-neutral-2);
+  border: 1px solid var(--color-neutral-5);
+  border-radius: var(--radius-2);
+  padding: var(--space-2) var(--space-3);
+  resize: none;
+  margin-top: var(--space-2);
+  grid-column: 1 / -1;
+}
+.walletNoteInput:focus { outline: none; border-color: var(--color-accent-7); }
+
+/* ── Notes ────────────────────────────────── */
+.notesArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.noteItem {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-3);
+  border-radius: var(--radius-3);
+  border: 1px solid var(--color-neutral-4);
+  border-left: 3px solid var(--color-accent-7);
+}
+
+.noteContent {
+  font-size: 0.85rem;
+  color: var(--color-neutral-11);
+  line-height: 1.55;
+  margin: 0 0 var(--space-2);
+  white-space: pre-wrap;
+}
+
+.noteDate {
+  font-size: 0.68rem;
+  color: var(--color-neutral-8);
+}
+
+.noteForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.noteTextarea {
+  width: 100%;
+  min-height: 80px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--color-neutral-12);
+  background: var(--color-neutral-3);
+  border: 1px solid var(--color-neutral-5);
+  border-radius: var(--radius-3);
+  padding: var(--space-3);
+  resize: vertical;
+  box-sizing: border-box;
+}
+.noteTextarea:focus { outline: none; border-color: var(--color-accent-7); }
+.noteTextarea::placeholder { color: var(--color-neutral-8); }
+
+.noteActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btnAddNote {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-accent-contrast);
+  background: var(--color-accent-9);
+  border: none;
+  border-radius: var(--radius-3);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btnAddNote:hover { background: var(--color-accent-10); }
+.btnAddNote:disabled { opacity: 0.5; cursor: default; }
+
+/* ── Activity log ─────────────────────────── */
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.activityItem {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  position: relative;
+}
+
+.activityItem::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 28px;
+  bottom: -8px;
+  width: 1px;
+  background: var(--color-neutral-5);
+}
+
+.activityItem:last-child::before { display: none; }
+
+.activityDot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--color-neutral-5);
+  background: var(--color-neutral-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 1;
+  margin-top: 2px;
+}
+
+.activityDotStatus { border-color: var(--color-accent-7); background: color-mix(in srgb, var(--color-accent-9) 15%, transparent); }
+.activityDotWallet { border-color: var(--color-success-7); background: color-mix(in srgb, var(--color-success-9) 15%, transparent); }
+.activityDotNote { border-color: var(--amber-7); background: color-mix(in srgb, var(--amber-9) 15%, transparent); }
+.activityDotProject { border-color: var(--violet-7); background: color-mix(in srgb, var(--violet-9) 15%, transparent); }
+
+.activityContent { flex: 1; padding-top: 2px; }
+
+.activityMessage {
+  font-size: 0.82rem;
+  color: var(--color-neutral-11);
+  line-height: 1.4;
+}
+
+.activityTime {
+  font-size: 0.7rem;
+  color: var(--color-neutral-8);
+  margin-top: 2px;
+}
+
+.emptyState {
+  font-size: 0.82rem;
+  color: var(--color-neutral-9);
+  text-align: center;
+  padding: var(--space-4);
+}

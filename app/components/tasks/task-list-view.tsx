@@ -6,6 +6,7 @@ import styles from "./task-list-view.module.css";
 
 interface TaskListViewProps {
   tasks: Task[];
+  onTaskClick?: (task: Task) => void;
 }
 
 const TYPE_ICONS: Record<Task["type"], React.ReactNode> = {
@@ -53,7 +54,7 @@ function formatDeadline(dateStr: string) {
   return { label: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }), urgent: false };
 }
 
-export default function TaskListView({ tasks }: TaskListViewProps) {
+export default function TaskListView({ tasks, onTaskClick }: TaskListViewProps) {
   return (
     <div className={styles.list}>
       <div className={styles.header}>
@@ -73,6 +74,8 @@ export default function TaskListView({ tasks }: TaskListViewProps) {
           <div
             key={task.id}
             className={classNames(styles.row, { [styles.rowOverdue]: task.isOverdue })}
+            onClick={onTaskClick ? () => onTaskClick(task) : undefined}
+            style={onTaskClick ? { cursor: "pointer" } : undefined}
           >
             {/* Title */}
             <div className={styles.taskTitle}>
