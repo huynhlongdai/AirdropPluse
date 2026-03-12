@@ -36,8 +36,12 @@ export function IdentityForm({ initial, onSave, onClose }: IdentityFormProps) {
   const set = <K extends keyof IdentityProfile>(key: K, val: IdentityProfile[K]) =>
     setForm((f) => ({ ...f, [key]: val }));
 
-  const setNested = <K extends keyof IdentityProfile>(section: K, field: string, val: string) =>
-    setForm((f) => ({ ...f, [section]: { ...(f[section] as Record<string, unknown> | undefined ?? {}), [field]: val } }));
+  const setNested = <K extends keyof IdentityProfile>(section: K, field: string, val: string) => {
+    setForm((f) => {
+      const existing = (f[section] as Record<string, unknown> | undefined) ?? {};
+      return { ...f, [section]: { ...existing, [field]: val } };
+    });
+  };
 
   const toggleWallet = (wid: string) =>
     setForm((f) => ({

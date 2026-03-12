@@ -325,6 +325,7 @@ export default function Identities() {
 
       {editingProfile !== undefined && (
         <IdentityForm
+          key={editingProfile?.id ?? "new"}
           initial={editingProfile}
           onSave={handleSave}
           onClose={() => setEditingProfile(undefined)}
