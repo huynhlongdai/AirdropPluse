@@ -11,6 +11,7 @@ export default [
     route("wallets", "routes/wallets.tsx"),
     route("tasks", "routes/tasks.tsx"),
     route("identities", "routes/identities.tsx"),
+    route("settings", "routes/settings.tsx"),
   ]),
   ...devRoutes,
 ] satisfies RouteConfig;

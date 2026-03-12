@@ -6,6 +6,7 @@ import {
   Wallet,
   CalendarDays,
   Users,
+  Settings,
 } from "lucide-react";
 import { ColorSchemeToggle } from "~/components/ui/color-scheme-toggle/color-scheme-toggle";
 import { useStore } from "~/hooks/use-store";
@@ -22,6 +23,7 @@ export default function AppLayout() {
     { to: "/wallets", label: "Wallets", icon: Wallet, end: false, badge: 0 },
     { to: "/tasks", label: "Tasks", icon: CalendarDays, end: false, badge: 0 },
     { to: "/identities", label: "Identities", icon: Users, end: false, badge: 0 },
+    { to: "/settings", label: "Settings", icon: Settings, end: false, badge: 0 },
   ];
 
   return (
