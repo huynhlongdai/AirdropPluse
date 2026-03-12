@@ -1,0 +1,285 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: var(--space-4);
+  animation: var(--animation-fade-in);
+}
+
+.drawer {
+  width: 520px;
+  max-width: 100%;
+  height: calc(100vh - var(--space-8));
+  background: var(--color-neutral-2);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: var(--animation-scale-up);
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5);
+  border-bottom: var(--border-size-1) solid var(--color-neutral-5);
+  flex-shrink: 0;
+}
+
+.drawerTitle {
+  font-size: var(--font-size-3);
+  font-weight: 700;
+  color: var(--color-neutral-12);
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-2);
+  background: var(--color-neutral-3);
+  color: var(--color-neutral-10);
+  cursor: pointer;
+  transition: all 150ms var(--ease);
+}
+
+.closeBtn:hover {
+  background: var(--color-neutral-5);
+  color: var(--color-neutral-12);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: var(--border-size-1) solid var(--color-neutral-5);
+  flex-shrink: 0;
+}
+
+.tab {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  color: var(--color-neutral-10);
+  cursor: pointer;
+  transition: all 150ms var(--ease);
+}
+
+.tab:hover {
+  background: var(--color-neutral-3);
+}
+
+.tabActive {
+  background: var(--color-accent-3);
+  color: var(--color-accent-11);
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  color: var(--color-neutral-11);
+}
+
+.required {
+  color: var(--color-error-9);
+  margin-left: 2px;
+}
+
+.input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-1);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-3);
+  color: var(--color-neutral-12);
+  font-size: var(--font-size-2);
+  font-family: inherit;
+  transition: border-color 150ms var(--ease);
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent-8);
+  box-shadow: 0 0 0 3px var(--color-accent-4);
+}
+
+.inputMono {
+  font-family: var(--font-monospace-code);
+  font-size: var(--font-size-1);
+}
+
+.select {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-1);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-3);
+  color: var(--color-neutral-12);
+  font-size: var(--font-size-2);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 150ms var(--ease);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-accent-8);
+}
+
+.textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-1);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-3);
+  color: var(--color-neutral-12);
+  font-size: var(--font-size-1);
+  font-family: var(--font-monospace-code);
+  resize: vertical;
+  min-height: 120px;
+  transition: border-color 150ms var(--ease);
+  box-sizing: border-box;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-accent-8);
+  box-shadow: 0 0 0 3px var(--color-accent-4);
+}
+
+.hint {
+  font-size: var(--font-size-0);
+  color: var(--color-neutral-9);
+}
+
+.chainGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chainToggle {
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-neutral-3);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  color: var(--color-neutral-11);
+  cursor: pointer;
+  transition: all 150ms var(--ease);
+}
+
+.chainToggle:hover {
+  background: var(--color-neutral-4);
+}
+
+.chainToggleActive {
+  background: var(--color-accent-3);
+  border-color: var(--color-accent-7);
+  color: var(--color-accent-11);
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-neutral-5);
+  margin: var(--space-2) 0;
+}
+
+.footer {
+  padding: var(--space-4) var(--space-5);
+  border-top: var(--border-size-1) solid var(--color-neutral-5);
+  display: flex;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.saveBtn {
+  flex: 1;
+  padding: var(--space-3);
+  background: var(--color-accent-9);
+  color: var(--color-accent-contrast);
+  border: none;
+  border-radius: var(--radius-3);
+  font-size: var(--font-size-2);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms var(--ease);
+}
+
+.saveBtn:hover {
+  background: var(--color-accent-10);
+}
+
+.cancelBtn {
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-neutral-3);
+  color: var(--color-neutral-11);
+  border: none;
+  border-radius: var(--radius-3);
+  font-size: var(--font-size-2);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms var(--ease);
+}
+
+.cancelBtn:hover {
+  background: var(--color-neutral-5);
+}
+
+.importedList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.importedItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-success-2);
+  border: var(--border-size-1) solid var(--color-success-6);
+  border-radius: var(--radius-2);
+  font-family: var(--font-monospace-code);
+  font-size: var(--font-size-0);
+  color: var(--color-success-11);
+}
+
+.importDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-success-9);
+  flex-shrink: 0;
+}

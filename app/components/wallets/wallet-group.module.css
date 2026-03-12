@@ -1,0 +1,300 @@
+.group {
+  background: var(--color-neutral-2);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-4);
+  overflow: hidden;
+  transition: box-shadow 200ms var(--ease);
+}
+
+.group:hover {
+  box-shadow: var(--shadow-2);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  cursor: pointer;
+  user-select: none;
+  transition: background 150ms var(--ease);
+}
+
+.header:hover {
+  background: var(--color-neutral-3);
+}
+
+.chevron {
+  color: var(--color-neutral-9);
+  transition: transform 200ms var(--ease);
+  flex-shrink: 0;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.mainIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-3);
+  flex-shrink: 0;
+}
+
+.mainIconCold {
+  background: linear-gradient(135deg, var(--blue-3), var(--blue-5));
+  color: var(--blue-11);
+}
+
+.mainIconHot {
+  background: linear-gradient(135deg, var(--orange-3), var(--orange-5));
+  color: var(--orange-11);
+}
+
+.mainIconCex {
+  background: linear-gradient(135deg, var(--teal-3), var(--teal-5));
+  color: var(--teal-11);
+}
+
+.mainIconBurner {
+  background: linear-gradient(135deg, var(--color-neutral-3), var(--color-neutral-5));
+  color: var(--color-neutral-11);
+}
+
+.headerInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.mainName {
+  font-size: var(--font-size-3);
+  font-weight: 700;
+  color: var(--color-neutral-12);
+}
+
+.mainTypeBadge {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-1);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badgeCold {
+  background: var(--blue-3);
+  color: var(--blue-11);
+}
+
+.badgeHot {
+  background: var(--orange-3);
+  color: var(--orange-11);
+}
+
+.badgeCex {
+  background: var(--teal-3);
+  color: var(--teal-11);
+}
+
+.badgeBurner {
+  background: var(--color-neutral-4);
+  color: var(--color-neutral-11);
+}
+
+.mainAddress {
+  font-family: var(--font-monospace-code);
+  font-size: var(--font-size-0);
+  color: var(--color-neutral-10);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.copyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-1);
+  color: var(--color-neutral-9);
+  cursor: pointer;
+  transition: all 150ms var(--ease);
+}
+
+.copyBtn:hover {
+  background: var(--color-neutral-4);
+  color: var(--color-neutral-12);
+}
+
+.copyBtnCopied {
+  color: var(--color-success-9);
+}
+
+.headerStats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin-left: auto;
+  padding-right: var(--space-2);
+}
+
+.stat {
+  text-align: center;
+}
+
+.statValue {
+  font-size: var(--font-size-3);
+  font-weight: 700;
+  color: var(--color-accent-11);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 10px;
+  color: var(--color-neutral-10);
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-2);
+  background: var(--color-neutral-2);
+  color: var(--color-neutral-10);
+  cursor: pointer;
+  transition: all 150ms var(--ease);
+}
+
+.actionBtn:hover {
+  background: var(--color-neutral-4);
+  color: var(--color-neutral-12);
+}
+
+.body {
+  border-top: var(--border-size-1) solid var(--color-neutral-5);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.bodyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.subLabel {
+  font-size: var(--font-size-0);
+  font-weight: 600;
+  color: var(--color-neutral-10);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.addSubBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-accent-3);
+  color: var(--color-accent-11);
+  border: none;
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms var(--ease);
+}
+
+.addSubBtn:hover {
+  background: var(--color-accent-4);
+}
+
+.notes {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-3);
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-1);
+  color: var(--color-neutral-10);
+  font-style: italic;
+  margin-top: var(--space-2);
+}
+
+.bulkBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-accent-3);
+  border-radius: var(--radius-2);
+  margin-bottom: var(--space-2);
+}
+
+.bulkLabel {
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  color: var(--color-accent-11);
+}
+
+.bulkActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.bulkBtn {
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-accent-9);
+  color: var(--color-accent-contrast);
+  border: none;
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-0);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms var(--ease);
+}
+
+.bulkBtn:hover {
+  background: var(--color-accent-10);
+}
+
+.bulkBtnDanger {
+  background: var(--color-error-9);
+  color: var(--color-error-contrast);
+}
+
+.bulkBtnDanger:hover {
+  background: var(--color-error-10);
+}
+
+.emptyState {
+  padding: var(--space-5);
+  text-align: center;
+  color: var(--color-neutral-9);
+  font-size: var(--font-size-1);
+}
