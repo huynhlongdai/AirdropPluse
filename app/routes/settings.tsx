@@ -15,25 +15,27 @@ import {
   Trash2,
   ChevronDown,
   ExternalLink,
-  Copy,
   Activity,
   Clock,
+  Key,
+  Star,
 } from "lucide-react";
 import type { Route } from "./+types/settings";
 import {
-  mockIntegrations,
+  mockProviders,
   mockAiMappings,
   mockTaxonomy,
   mockIngestionSettings,
   mockApiLogs,
   AI_MODELS,
-  type ApiIntegration,
+  type ProviderIntegration,
+  type ApiKey,
+  type KeyStatus,
   type AiFeatureMapping,
   type TaxonomyItem,
   type TaxonomyType,
   type IngestionSettings,
 } from "~/data/settings";
-import { useStore } from "~/hooks/use-store";
 import styles from "./settings.module.css";
 
 export function meta({}: Route.MetaArgs) {
@@ -84,14 +86,14 @@ export default function Settings() {
   );
 }
 
-/* ─── Integration Status Helpers ─────────────────────────────────── */
+/* ─── Key Status Helpers ─────────────────────────────────────────── */
 
-function StatusBadge({ status }: { status: ApiIntegration["status"] }) {
-  const map = {
-    connected: { icon: CheckCircle2, label: "Connected", cls: styles.statusConnected },
+function KeyStatusBadge({ status }: { status: KeyStatus }) {
+  const map: Record<KeyStatus, { icon: React.ElementType; label: string; cls: string }> = {
+    active: { icon: CheckCircle2, label: "Active", cls: styles.statusConnected },
     error: { icon: XCircle, label: "Error", cls: styles.statusError },
-    disconnected: { icon: AlertCircle, label: "Disconnected", cls: styles.statusDisconnected },
-    limited: { icon: AlertTriangle, label: "Limited", cls: styles.statusLimited },
+    exhausted: { icon: AlertTriangle, label: "Exhausted", cls: styles.statusLimited },
+    untested: { icon: AlertCircle, label: "Untested", cls: styles.statusDisconnected },
   };
   const { icon: Icon, label, cls } = map[status];
   return (
@@ -102,13 +104,13 @@ function StatusBadge({ status }: { status: ApiIntegration["status"] }) {
   );
 }
 
-function UsageBar({ percent, cls }: { percent: number; cls?: string }) {
+function UsageBar({ percent }: { percent: number }) {
   const barCls =
     percent >= 90 ? styles.usageBarFill_danger
     : percent >= 70 ? styles.usageBarFill_warn
     : styles.usageBarFill_ok;
   return (
-    <div className={`${styles.usageBar} ${cls ?? ""}`}>
+    <div className={styles.usageBar}>
       <div className={`${styles.usageBarFill} ${barCls}`} style={{ width: `${percent}%` }} />
     </div>
   );
@@ -117,202 +119,303 @@ function UsageBar({ percent, cls }: { percent: number; cls?: string }) {
 /* ─── INTEGRATIONS TAB ───────────────────────────────────────────── */
 
 function IntegrationsTab() {
-  const [integrations, setIntegrations] = React.useState(mockIntegrations);
-  const [visibleKeys, setVisibleKeys] = React.useState<Set<string>>(new Set());
-  const [testing, setTesting] = React.useState<Set<string>>(new Set());
-  const [editingKey, setEditingKey] = React.useState<string | null>(null);
-  const [keyDraft, setKeyDraft] = React.useState("");
-  const { addInboxItem } = useStore();
+  const [providers, setProviders] = React.useState<ProviderIntegration[]>(mockProviders);
 
-  const toggleKey = (id: string) =>
-    setVisibleKeys((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  const updateProvider = (providerId: string, updater: (p: ProviderIntegration) => ProviderIntegration) =>
+    setProviders((prev) => prev.map((p) => (p.id === providerId ? updater(p) : p)));
 
-  const testConnection = async (id: string) => {
-    setTesting((prev) => new Set(prev).add(id));
+  const updateKey = (providerId: string, keyId: string, updater: (k: ApiKey) => ApiKey) =>
+    updateProvider(providerId, (p) => ({
+      ...p,
+      keys: p.keys.map((k) => (k.id === keyId ? updater(k) : k)),
+    }));
+
+  const addKey = (providerId: string) =>
+    updateProvider(providerId, (p) => ({
+      ...p,
+      keys: [
+        ...p.keys,
+        {
+          id: `${providerId}-k${Date.now()}`,
+          label: `Backup #${p.keys.length}`,
+          status: "untested" as KeyStatus,
+          isPrimary: false,
+        },
+      ],
+    }));
+
+  const removeKey = (providerId: string, keyId: string) =>
+    updateProvider(providerId, (p) => ({
+      ...p,
+      keys: p.keys.filter((k) => k.id !== keyId),
+    }));
+
+  const testKey = async (providerId: string, keyId: string) => {
+    updateKey(providerId, keyId, (k) => ({ ...k, status: "untested" }));
     await new Promise((r) => setTimeout(r, 1500));
-    setTesting((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
-    setIntegrations((prev) =>
-      prev.map((i) =>
-        i.id === id
-          ? { ...i, status: i.apiKeyMasked ? "connected" : "error", lastChecked: new Date().toISOString() }
-          : i
-      )
-    );
+    updateKey(providerId, keyId, (k) => ({
+      ...k,
+      status: k.valueMasked ? "active" : "error",
+      lastChecked: new Date().toISOString(),
+    }));
   };
 
-  const saveKey = (id: string) => {
-    if (!keyDraft.trim()) return;
-    const masked = keyDraft.slice(0, 6) + "••••••••••••••••••••••••••" + keyDraft.slice(-4);
-    setIntegrations((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, apiKeyMasked: masked, status: "connected" } : i))
-    );
-    setEditingKey(null);
-    setKeyDraft("");
+  const saveKeyValue = (providerId: string, keyId: string, raw: string) => {
+    if (!raw.trim()) return;
+    const masked = raw.slice(0, 6) + "••••••••••••••••••••••••" + raw.slice(-4);
+    updateKey(providerId, keyId, (k) => ({ ...k, valueMasked: masked, status: "untested" }));
   };
 
-  const categories: { label: string; ids: string[] }[] = [
-    { label: "Artificial Intelligence", ids: ["int-1", "int-2", "int-3", "int-4"] },
-    { label: "Data Collection", ids: ["int-5", "int-6"] },
-  ];
+  const setPrimary = (providerId: string, keyId: string) =>
+    updateProvider(providerId, (p) => ({
+      ...p,
+      keys: p.keys.map((k) => ({ ...k, isPrimary: k.id === keyId })),
+    }));
+
+  const aiProviders = providers.filter((p) => p.category === "ai");
+  const scraperProviders = providers.filter((p) => p.category === "scraper");
 
   return (
     <div className={styles.tabSection}>
       <div className={styles.sectionDescription}>
-        Manage API keys for AI models and data ingestion services. Keys are masked at rest —
-        click <strong>Show</strong> to reveal temporarily.
+        Each provider supports <strong>multiple API keys</strong> — the system automatically
+        rotates to a backup key when the primary is exhausted or returns an error.
+        Mark a key as <strong>Primary</strong> to set the preferred rotation order.
       </div>
 
-      {categories.map(({ label, ids }) => (
-        <div key={label} className={styles.integrationGroup}>
-          <h3 className={styles.groupTitle}>{label}</h3>
-          <div className={styles.integrationList}>
-            {integrations
-              .filter((i) => ids.includes(i.id))
-              .map((integration) => (
-                <IntegrationCard
-                  key={integration.id}
-                  integration={integration}
-                  showKey={visibleKeys.has(integration.id)}
-                  isTesting={testing.has(integration.id)}
-                  isEditing={editingKey === integration.id}
-                  keyDraft={keyDraft}
-                  onToggleKey={() => toggleKey(integration.id)}
-                  onTest={() => testConnection(integration.id)}
-                  onEditKey={() => { setEditingKey(integration.id); setKeyDraft(""); }}
-                  onKeyDraftChange={setKeyDraft}
-                  onSaveKey={() => saveKey(integration.id)}
-                  onCancelEdit={() => { setEditingKey(null); setKeyDraft(""); }}
-                />
-              ))}
-          </div>
+      <div className={styles.integrationGroup}>
+        <h3 className={styles.groupTitle}>AI Providers</h3>
+        <div className={styles.integrationList}>
+          {aiProviders.map((provider) => (
+            <ProviderCard
+              key={provider.id}
+              provider={provider}
+              onAddKey={() => addKey(provider.id)}
+              onRemoveKey={(keyId) => removeKey(provider.id, keyId)}
+              onTestKey={(keyId) => testKey(provider.id, keyId)}
+              onSaveKeyValue={(keyId, raw) => saveKeyValue(provider.id, keyId, raw)}
+              onSetPrimary={(keyId) => setPrimary(provider.id, keyId)}
+            />
+          ))}
         </div>
-      ))}
+      </div>
+
+      <div className={styles.integrationGroup}>
+        <h3 className={styles.groupTitle}>Scraper</h3>
+        <div className={styles.integrationList}>
+          {scraperProviders.map((provider) => (
+            <ProviderCard
+              key={provider.id}
+              provider={provider}
+              onAddKey={() => addKey(provider.id)}
+              onRemoveKey={(keyId) => removeKey(provider.id, keyId)}
+              onTestKey={(keyId) => testKey(provider.id, keyId)}
+              onSaveKeyValue={(keyId, raw) => saveKeyValue(provider.id, keyId, raw)}
+              onSetPrimary={(keyId) => setPrimary(provider.id, keyId)}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-interface IntegrationCardProps {
-  integration: ApiIntegration;
-  showKey: boolean;
-  isTesting: boolean;
-  isEditing: boolean;
-  keyDraft: string;
-  onToggleKey: () => void;
-  onTest: () => void;
-  onEditKey: () => void;
-  onKeyDraftChange: (v: string) => void;
-  onSaveKey: () => void;
-  onCancelEdit: () => void;
+interface ProviderCardProps {
+  provider: ProviderIntegration;
+  onAddKey: () => void;
+  onRemoveKey: (keyId: string) => void;
+  onTestKey: (keyId: string) => void;
+  onSaveKeyValue: (keyId: string, raw: string) => void;
+  onSetPrimary: (keyId: string) => void;
 }
 
-function IntegrationCard({
-  integration,
-  showKey,
-  isTesting,
-  isEditing,
-  keyDraft,
-  onToggleKey,
-  onTest,
-  onEditKey,
-  onKeyDraftChange,
-  onSaveKey,
-  onCancelEdit,
-}: IntegrationCardProps) {
-  const { name, provider, description, apiKeyMasked, status, usagePercent, usageLabel, quotaLimit, lastChecked, iconColor, docsUrl } = integration;
+function ProviderCard({ provider, onAddKey, onRemoveKey, onTestKey, onSaveKeyValue, onSetPrimary }: ProviderCardProps) {
+  const [testing, setTesting] = React.useState<Set<string>>(new Set());
+  const [visibleKeys, setVisibleKeys] = React.useState<Set<string>>(new Set());
+  const [editingKey, setEditingKey] = React.useState<string | null>(null);
+  const [keyDraft, setKeyDraft] = React.useState("");
+
+  const handleTest = async (keyId: string) => {
+    setTesting((p) => new Set(p).add(keyId));
+    await onTestKey(keyId);
+    setTesting((p) => { const n = new Set(p); n.delete(keyId); return n; });
+  };
+
+  const toggleVisible = (keyId: string) =>
+    setVisibleKeys((p) => {
+      const n = new Set(p);
+      n.has(keyId) ? n.delete(keyId) : n.add(keyId);
+      return n;
+    });
+
+  const startEdit = (keyId: string) => { setEditingKey(keyId); setKeyDraft(""); };
+  const cancelEdit = () => { setEditingKey(null); setKeyDraft(""); };
+  const confirmEdit = (keyId: string) => {
+    onSaveKeyValue(keyId, keyDraft);
+    cancelEdit();
+  };
+
+  // Derive overall provider status from keys
+  const hasActive = provider.keys.some((k) => k.status === "active");
+  const hasError = provider.keys.every((k) => k.status === "error" || k.status === "exhausted");
+  const allUntested = provider.keys.every((k) => k.status === "untested" || !k.valueMasked);
+  const providerStatusCls = hasError
+    ? styles.integrationCardError
+    : allUntested
+    ? ""
+    : !hasActive
+    ? styles.integrationCardLimited
+    : "";
 
   return (
-    <div className={`${styles.integrationCard} ${status === "error" ? styles.integrationCardError : status === "limited" ? styles.integrationCardLimited : ""}`}>
+    <div className={`${styles.integrationCard} ${providerStatusCls}`}>
+      {/* Provider header */}
       <div className={styles.integrationCardHeader}>
-        <div className={styles.integrationIcon} style={{ background: iconColor }}>
-          {name.charAt(0)}
+        <div className={styles.integrationIcon} style={{ background: provider.iconColor }}>
+          {provider.name.charAt(0)}
         </div>
         <div className={styles.integrationInfo}>
           <div className={styles.integrationName}>
-            {name}
-            <span className={styles.integrationProvider}>{provider}</span>
+            {provider.name}
+            <span className={styles.integrationProvider}>{provider.provider}</span>
           </div>
-          <p className={styles.integrationDesc}>{description}</p>
+          <p className={styles.integrationDesc}>{provider.description}</p>
         </div>
         <div className={styles.integrationActions}>
-          <StatusBadge status={status} />
-          {docsUrl && (
-            <a href={docsUrl} target="_blank" rel="noopener noreferrer" className={styles.docsLink} title="Documentation">
+          <span className={styles.keyCountBadge}>
+            <Key className={styles.keyCountIcon} />
+            {provider.keys.filter((k) => k.valueMasked).length} / {provider.keys.length} keys
+          </span>
+          {provider.docsUrl && (
+            <a href={provider.docsUrl} target="_blank" rel="noopener noreferrer" className={styles.docsLink} title="Documentation">
               <ExternalLink className={styles.docsLinkIcon} />
             </a>
           )}
         </div>
       </div>
 
-      {/* API Key section */}
-      <div className={styles.apiKeyRow}>
-        <span className={styles.apiKeyLabel}>API Key</span>
-        {isEditing ? (
-          <div className={styles.apiKeyEditRow}>
-            <input
-              type="password"
-              className={styles.apiKeyInput}
-              value={keyDraft}
-              onChange={(e) => onKeyDraftChange(e.target.value)}
-              placeholder="Paste your API key here..."
-              autoFocus
-            />
-            <button className={styles.btnSm} onClick={onSaveKey}>Save</button>
-            <button className={`${styles.btnSm} ${styles.btnSmGhost}`} onClick={onCancelEdit}>Cancel</button>
-          </div>
-        ) : (
-          <div className={styles.apiKeyDisplay}>
-            <code className={styles.apiKeyCode}>
-              {apiKeyMasked ? (showKey ? apiKeyMasked : apiKeyMasked.replace(/[^•]/g, "•").substring(0, 32) + "••••") : "Not configured"}
-            </code>
-            {apiKeyMasked && (
-              <button className={styles.iconBtn} onClick={onToggleKey} title={showKey ? "Hide key" : "Show key"}>
-                {showKey ? <EyeOff className={styles.iconBtnIcon} /> : <Eye className={styles.iconBtnIcon} />}
-              </button>
+      {/* Keys list */}
+      <div className={styles.keyList}>
+        {provider.keys.map((apiKey, idx) => (
+          <div
+            key={apiKey.id}
+            className={`${styles.keyRow} ${apiKey.isPrimary ? styles.keyRowPrimary : ""}`}
+          >
+            <div className={styles.keyRowTop}>
+              {/* Order indicator */}
+              <span className={styles.keyOrder}>{idx + 1}</span>
+
+              {/* Label + primary badge */}
+              <div className={styles.keyMeta}>
+                <span className={styles.keyLabel}>{apiKey.label}</span>
+                {apiKey.isPrimary && (
+                  <span className={styles.primaryBadge}>
+                    <Star className={styles.primaryBadgeIcon} />
+                    Primary
+                  </span>
+                )}
+              </div>
+
+              {/* Key value */}
+              {editingKey === apiKey.id ? (
+                <div className={styles.apiKeyEditRow}>
+                  <input
+                    type="password"
+                    className={styles.apiKeyInput}
+                    value={keyDraft}
+                    onChange={(e) => setKeyDraft(e.target.value)}
+                    placeholder="Paste API key..."
+                    autoFocus
+                    onKeyDown={(e) => e.key === "Enter" && confirmEdit(apiKey.id)}
+                  />
+                  <button className={styles.btnSm} onClick={() => confirmEdit(apiKey.id)}>Save</button>
+                  <button className={`${styles.btnSm} ${styles.btnSmGhost}`} onClick={cancelEdit}>Cancel</button>
+                </div>
+              ) : (
+                <div className={styles.apiKeyDisplay}>
+                  <code className={styles.apiKeyCode}>
+                    {apiKey.valueMasked
+                      ? visibleKeys.has(apiKey.id)
+                        ? apiKey.valueMasked
+                        : "••••••••••••••••••••••••••••"
+                      : "Not configured"}
+                  </code>
+                  {apiKey.valueMasked && (
+                    <button className={styles.iconBtn} onClick={() => toggleVisible(apiKey.id)} title={visibleKeys.has(apiKey.id) ? "Hide" : "Show"}>
+                      {visibleKeys.has(apiKey.id) ? <EyeOff className={styles.iconBtnIcon} /> : <Eye className={styles.iconBtnIcon} />}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Status */}
+              <KeyStatusBadge status={apiKey.status} />
+
+              {/* Actions */}
+              <div className={styles.keyActions}>
+                {editingKey !== apiKey.id && (
+                  <button className={styles.btnSm} onClick={() => startEdit(apiKey.id)}>
+                    {apiKey.valueMasked ? "Update" : "Add Key"}
+                  </button>
+                )}
+                <button
+                  className={`${styles.btnSm} ${styles.btnSmAccent}`}
+                  onClick={() => handleTest(apiKey.id)}
+                  disabled={testing.has(apiKey.id)}
+                >
+                  {testing.has(apiKey.id)
+                    ? <><RefreshCw className={styles.spinIcon} /> Testing...</>
+                    : "Test"}
+                </button>
+                {!apiKey.isPrimary && (
+                  <button
+                    className={`${styles.btnSm} ${styles.btnSmGhost}`}
+                    onClick={() => onSetPrimary(apiKey.id)}
+                    title="Set as primary"
+                  >
+                    <Star className={styles.btnIcon} />
+                    Set Primary
+                  </button>
+                )}
+                {provider.keys.length > 1 && (
+                  <button
+                    className={styles.keyDeleteBtn}
+                    onClick={() => onRemoveKey(apiKey.id)}
+                    title="Remove key"
+                  >
+                    <Trash2 className={styles.keyDeleteIcon} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Usage info */}
+            {apiKey.usagePercent !== undefined && (
+              <div className={styles.keyUsageRow}>
+                <div className={styles.usageRow}>
+                  <span className={styles.usageLabel}>{apiKey.usageLabel}</span>
+                  {apiKey.quotaLimit && <span className={styles.usageQuota}>{apiKey.quotaLimit}</span>}
+                </div>
+                <UsageBar percent={apiKey.usagePercent} />
+              </div>
             )}
-            <button className={styles.btnSm} onClick={onEditKey}>
-              {apiKeyMasked ? "Update" : "Add Key"}
-            </button>
+
+            {/* Last checked */}
+            {apiKey.lastChecked && (
+              <span className={styles.lastChecked}>
+                <Clock className={styles.lastCheckedIcon} />
+                Checked {new Date(apiKey.lastChecked).toLocaleTimeString()}
+              </span>
+            )}
           </div>
-        )}
+        ))}
       </div>
 
-      {/* Usage bar */}
-      {usagePercent !== undefined && (
-        <div className={styles.usageRow}>
-          <span className={styles.usageLabel}>{usageLabel}</span>
-          <span className={styles.usageQuota}>{quotaLimit}</span>
-        </div>
-      )}
-      {usagePercent !== undefined && <UsageBar percent={usagePercent} />}
-
-      {/* Footer */}
-      <div className={styles.integrationFooter}>
-        {lastChecked && (
-          <span className={styles.lastChecked}>
-            <Clock className={styles.lastCheckedIcon} />
-            Last checked: {new Date(lastChecked).toLocaleTimeString()}
-          </span>
-        )}
-        <button
-          className={`${styles.btnSm} ${styles.btnSmAccent}`}
-          onClick={onTest}
-          disabled={isTesting}
-        >
-          {isTesting ? (
-            <><RefreshCw className={`${styles.spinIcon}`} /> Testing...</>
-          ) : (
-            "Test Connection"
-          )}
-        </button>
-      </div>
+      {/* Add key button */}
+      <button className={styles.addKeyBtn} onClick={onAddKey}>
+        <Plus className={styles.btnIcon} />
+        Add API Key
+      </button>
     </div>
   );
 }

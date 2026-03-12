@@ -21,7 +21,7 @@
   margin: 0;
 }
 
-/* ── Tab bar ────────────────────────────────────────────────────── */
+/* Tab bar */
 .tabBar {
   display: flex;
   gap: var(--space-1);
@@ -66,7 +66,7 @@
   min-height: 400px;
 }
 
-/* ── Shared section layout ──────────────────────────────────────── */
+/* Shared section layout */
 .tabSection {
   display: flex;
   flex-direction: column;
@@ -83,7 +83,7 @@
   line-height: 1.6;
 }
 
-/* ── Integration group ──────────────────────────────────────────── */
+/* Integration group */
 .integrationGroup {
   display: flex;
   flex-direction: column;
@@ -105,7 +105,7 @@
   gap: var(--space-3);
 }
 
-/* ── Integration card ───────────────────────────────────────────── */
+/* Integration card */
 .integrationCard {
   background: var(--color-neutral-2);
   border: 1px solid var(--color-neutral-6);
@@ -205,7 +205,7 @@
   height: 13px;
 }
 
-/* ── Status badges ──────────────────────────────────────────────── */
+/* Status badges */
 .statusBadge {
   display: inline-flex;
   align-items: center;
@@ -241,7 +241,7 @@
   color: var(--amber-11);
 }
 
-/* ── API Key display ────────────────────────────────────────────── */
+/* API Key display */
 .apiKeyRow {
   display: flex;
   align-items: center;
@@ -275,7 +275,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 280px;
+  max-width: 260px;
 }
 
 .apiKeyEditRow {
@@ -302,7 +302,7 @@
   box-shadow: 0 0 0 2px var(--color-accent-4);
 }
 
-/* ── Usage bar ──────────────────────────────────────────────────── */
+/* Usage bar */
 .usageRow {
   display: flex;
   justify-content: space-between;
@@ -343,7 +343,7 @@
   background: var(--color-error-9);
 }
 
-/* ── Integration footer ─────────────────────────────────────────── */
+/* Integration footer */
 .integrationFooter {
   display: flex;
   align-items: center;
@@ -364,7 +364,7 @@
   height: 12px;
 }
 
-/* ── Buttons ────────────────────────────────────────────────────── */
+/* Buttons */
 .btnPrimary {
   display: inline-flex;
   align-items: center;
@@ -482,7 +482,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* ── Saved badge ────────────────────────────────────────────────── */
+/* Saved badge */
 .savedBadge {
   display: inline-flex;
   align-items: center;
@@ -500,7 +500,174 @@
   height: 12px;
 }
 
-/* ── AI Config ──────────────────────────────────────────────────── */
+/* Multi-key provider UI */
+
+.keyCountBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-00);
+  font-weight: 600;
+  color: var(--color-neutral-10);
+  background: var(--color-neutral-3);
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-round);
+}
+
+.keyCountIcon {
+  width: 11px;
+  height: 11px;
+}
+
+.keyList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--color-neutral-5);
+  border-radius: var(--radius-3);
+  overflow: hidden;
+}
+
+.keyRow {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-neutral-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--color-neutral-1);
+  transition: background 0.12s;
+}
+
+.keyRow:last-child {
+  border-bottom: none;
+}
+
+.keyRow:hover {
+  background: var(--color-neutral-2);
+}
+
+.keyRowPrimary {
+  background: var(--color-accent-2);
+  border-left: 3px solid var(--color-accent-9);
+}
+
+.keyRowPrimary:hover {
+  background: var(--color-accent-3);
+}
+
+.keyRowTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.keyOrder {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-neutral-4);
+  color: var(--color-neutral-10);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.keyMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 90px;
+}
+
+.keyLabel {
+  font-size: var(--font-size-00);
+  font-weight: 600;
+  color: var(--color-neutral-11);
+}
+
+.primaryBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-accent-11);
+  background: var(--color-accent-3);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-round);
+}
+
+.primaryBadgeIcon {
+  width: 10px;
+  height: 10px;
+}
+
+.keyActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.keyDeleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: 1px solid var(--color-neutral-5);
+  border-radius: var(--radius-2);
+  color: var(--color-neutral-8);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.keyDeleteBtn:hover {
+  color: var(--color-error-9);
+  border-color: var(--color-error-7);
+}
+
+.keyDeleteIcon {
+  width: 12px;
+  height: 12px;
+}
+
+.keyUsageRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-left: 30px;
+}
+
+.addKeyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  color: var(--color-accent-11);
+  border: 1px dashed var(--color-accent-7);
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-00);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  align-self: flex-start;
+}
+
+.addKeyBtn:hover {
+  background: var(--color-accent-3);
+  border-style: solid;
+}
+
+/* AI Config */
 .aiGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
@@ -615,7 +782,7 @@
   color: var(--color-neutral-9);
 }
 
-/* ── Taxonomy ───────────────────────────────────────────────────── */
+/* Taxonomy */
 .taxonomySection {
   background: var(--color-neutral-2);
   border: 1px solid var(--color-neutral-6);
@@ -753,7 +920,7 @@
   transform: scale(1.2);
 }
 
-/* ── Ingestion Settings ─────────────────────────────────────────── */
+/* Ingestion Settings */
 .ingestionSection {
   background: var(--color-neutral-2);
   border: 1px solid var(--color-neutral-6);
@@ -861,7 +1028,7 @@
   gap: var(--space-2);
 }
 
-/* ── Security / Logs ────────────────────────────────────────────── */
+/* Security / Logs */
 .logStats {
   display: flex;
   gap: var(--space-4);
@@ -945,7 +1112,7 @@
   border-color: var(--color-accent-7);
 }
 
-/* ── Log table ──────────────────────────────────────────────────── */
+/* Log table */
 .logTable {
   background: var(--color-neutral-2);
   border: 1px solid var(--color-neutral-6);
@@ -1085,7 +1252,7 @@
   color: var(--color-error-11);
 }
 
-/* ── Responsive ─────────────────────────────────────────────────── */
+/* Responsive */
 @media (max-width: 768px) {
   .page {
     padding: var(--space-4);
@@ -1099,12 +1266,20 @@
     grid-template-columns: 1fr;
   }
 
+  .keyRowTop {
+    flex-wrap: wrap;
+  }
+
+  .keyActions {
+    margin-left: 0;
+    margin-top: var(--space-2);
+  }
+
   .logTableHeader,
   .logRow {
     grid-template-columns: 90px 80px 1fr 60px;
   }
 
-  /* Hide less-important columns on mobile */
   .logTableHeader span:nth-child(5),
   .logTableHeader span:nth-child(6),
   .logTableHeader span:nth-child(7),
