@@ -1,13 +1,16 @@
 import React from "react";
-import { List, LayoutGrid, CalendarDays, AlertCircle } from "lucide-react";
+import { List, LayoutGrid, CalendarDays, AlertCircle, Plus } from "lucide-react";
 import classNames from "classnames";
+import { toast } from "sonner";
 import type { Route } from "./+types/tasks";
-import { mockTasks } from "~/data/tasks";
 import type { Task } from "~/data/tasks";
+import { useStore } from "~/hooks/use-store";
 import TaskListView from "~/components/tasks/task-list-view";
 import TaskBoardView from "~/components/tasks/task-board-view";
 import TaskCalendarView from "~/components/tasks/task-calendar-view";
 import TaskDetailPanel from "~/components/tasks/task-detail-panel";
+import TaskFormDrawer from "~/components/tasks/task-form-drawer";
+import ConfirmDeleteDialog from "~/components/confirm-delete-dialog";
 import styles from "./tasks.module.css";
 
 export function meta({}: Route.MetaArgs) {
@@ -20,6 +23,8 @@ export function meta({}: Route.MetaArgs) {
 type ViewMode = "list" | "board" | "calendar";
 
 export default function Tasks() {
+  const { tasks, projects, addTask, updateTask, deleteTask } = useStore();
+
   const [view, setView] = React.useState<ViewMode>("board");
   const [filterType, setFilterType] = React.useState("all");
   const [filterStatus, setFilterStatus] = React.useState("all");
@@ -27,13 +32,16 @@ export default function Tasks() {
   const [filterPriority, setFilterPriority] = React.useState("all");
   const [todayFocus, setTodayFocus] = React.useState(false);
   const [search, setSearch] = React.useState("");
-  const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
-  const [tasks, setTasks] = React.useState<Task[]>(mockTasks);
 
-  const projects = React.useMemo(() => {
-    const names = mockTasks.map((t) => t.projectName).filter(Boolean) as string[];
+  const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
+  const [showForm, setShowForm] = React.useState(false);
+  const [editingTask, setEditingTask] = React.useState<Task | null>(null);
+  const [deletingTask, setDeletingTask] = React.useState<Task | null>(null);
+
+  const projectNames = React.useMemo(() => {
+    const names = tasks.map((t) => t.projectName).filter(Boolean) as string[];
     return [...new Set(names)];
-  }, []);
+  }, [tasks]);
 
   const filteredTasks = React.useMemo(() => {
     let filtered: Task[] = tasks;
@@ -62,7 +70,6 @@ export default function Tasks() {
     return filtered;
   }, [tasks, search, filterType, filterStatus, filterProject, filterPriority, todayFocus]);
 
-  // Stats
   const total = tasks.length;
   const completed = tasks.filter((t) => t.status === "completed").length;
   const inProgress = tasks.filter((t) => t.status === "in-progress").length;
@@ -74,8 +81,39 @@ export default function Tasks() {
   }
 
   function handleTaskUpdate(updatedTask: Task) {
-    setTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
+    updateTask(updatedTask);
     setSelectedTask(updatedTask);
+  }
+
+  function handleSaveTask(task: Task) {
+    if (editingTask) {
+      updateTask(task);
+    } else {
+      addTask(task);
+    }
+  }
+
+  function handleDeleteConfirm() {
+    if (!deletingTask) return;
+    deleteTask(deletingTask.id);
+    toast.success(`Task "${deletingTask.title}" deleted.`);
+    if (selectedTask?.id === deletingTask.id) setSelectedTask(null);
+    setDeletingTask(null);
+  }
+
+  function openEditTask(task: Task) {
+    setEditingTask(task);
+    setShowForm(true);
+    setSelectedTask(null);
+  }
+
+  function openDeleteTask(task: Task) {
+    setDeletingTask(task);
+  }
+
+  function handleFormClose() {
+    setShowForm(false);
+    setEditingTask(null);
   }
 
   return (
@@ -89,6 +127,9 @@ export default function Tasks() {
               Coordinate missions across all projects, wallets, and identities
             </p>
           </div>
+          <button className={styles.addButton} onClick={() => { setEditingTask(null); setShowForm(true); }} type="button">
+            <Plus size={16} /> New Task
+          </button>
         </header>
 
         {/* Stats bar */}
@@ -117,7 +158,6 @@ export default function Tasks() {
 
         {/* Toolbar */}
         <div className={styles.toolbar}>
-          {/* View toggle */}
           <div className={styles.viewToggle}>
             <button
               className={classNames(styles.viewButton, { [styles.viewButtonActive]: view === "list" })}
@@ -142,7 +182,6 @@ export default function Tasks() {
             </button>
           </div>
 
-          {/* Today focus */}
           <button
             className={classNames(styles.todayFocusButton, { [styles.todayFocusActive]: todayFocus })}
             onClick={() => setTodayFocus((v) => !v)}
@@ -152,13 +191,8 @@ export default function Tasks() {
             Today&apos;s Focus
           </button>
 
-          {/* Filters */}
           <div className={styles.filterGroup}>
-            <select
-              className={styles.filterSelect}
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-            >
+            <select className={styles.filterSelect} value={filterType} onChange={(e) => setFilterType(e.target.value)}>
               <option value="all">All Types</option>
               <option value="onchain">On-chain</option>
               <option value="social">Social</option>
@@ -166,11 +200,7 @@ export default function Tasks() {
               <option value="one-time">One-time</option>
             </select>
 
-            <select
-              className={styles.filterSelect}
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
+            <select className={styles.filterSelect} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
               <option value="all">All Status</option>
               <option value="backlog">Backlog</option>
               <option value="in-progress">In Progress</option>
@@ -178,22 +208,14 @@ export default function Tasks() {
               <option value="completed">Completed</option>
             </select>
 
-            <select
-              className={styles.filterSelect}
-              value={filterProject}
-              onChange={(e) => setFilterProject(e.target.value)}
-            >
+            <select className={styles.filterSelect} value={filterProject} onChange={(e) => setFilterProject(e.target.value)}>
               <option value="all">All Projects</option>
-              {projects.map((p) => (
+              {projectNames.map((p) => (
                 <option key={p} value={p}>{p}</option>
               ))}
             </select>
 
-            <select
-              className={styles.filterSelect}
-              value={filterPriority}
-              onChange={(e) => setFilterPriority(e.target.value)}
-            >
+            <select className={styles.filterSelect} value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
               <option value="all">All Priorities</option>
               <option value="high">High</option>
               <option value="medium">Medium</option>
@@ -201,7 +223,6 @@ export default function Tasks() {
             </select>
           </div>
 
-          {/* Search */}
           <input
             className={styles.searchInput}
             type="text"
@@ -213,22 +234,43 @@ export default function Tasks() {
 
         {/* Content */}
         {filteredTasks.length === 0 ? (
-          <div className={styles.emptyState}>No tasks match your filters.</div>
+          <div className={styles.emptyState}>
+            No tasks match your filters.
+            {' '}
+            <button className={styles.emptyAddBtn} onClick={() => setShowForm(true)} type="button">Create a task</button>
+          </div>
         ) : view === "list" ? (
-          <TaskListView tasks={filteredTasks} onTaskClick={handleTaskClick} />
+          <TaskListView tasks={filteredTasks} onTaskClick={handleTaskClick} onEditTask={openEditTask} onDeleteTask={openDeleteTask} />
         ) : view === "board" ? (
-          <TaskBoardView tasks={filteredTasks} onTaskClick={handleTaskClick} />
+          <TaskBoardView tasks={filteredTasks} onTaskClick={handleTaskClick} onEditTask={openEditTask} onDeleteTask={openDeleteTask} />
         ) : (
           <TaskCalendarView tasks={filteredTasks} onTaskClick={handleTaskClick} />
         )}
       </div>
 
-      {/* Task Detail Panel */}
       {selectedTask && (
         <TaskDetailPanel
           task={selectedTask}
           onClose={() => setSelectedTask(null)}
           onTaskUpdate={handleTaskUpdate}
+        />
+      )}
+
+      {showForm && (
+        <TaskFormDrawer
+          task={editingTask}
+          projects={projects}
+          onClose={handleFormClose}
+          onSave={handleSaveTask}
+        />
+      )}
+
+      {deletingTask && (
+        <ConfirmDeleteDialog
+          title={`Delete "${deletingTask.title}"?`}
+          description="This task will be permanently removed from your task manager."
+          onCancel={() => setDeletingTask(null)}
+          onConfirm={handleDeleteConfirm}
         />
       )}
     </main>

@@ -20,6 +20,58 @@
   color: var(--color-neutral-11);
 }
 
+/* Top Bar */
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.topActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-accent-4);
+  border: var(--border-size-1) solid var(--color-accent-7);
+  border-radius: var(--radius-3);
+  color: var(--color-accent-11);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms var(--ease);
+}
+
+.editBtn:hover {
+  background: var(--color-accent-5);
+}
+
+.deleteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-error-3);
+  border: var(--border-size-1) solid var(--color-error-6);
+  border-radius: var(--radius-3);
+  color: var(--color-error-11);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms var(--ease);
+}
+
+.deleteBtn:hover {
+  background: var(--color-error-4);
+}
+
 /* Back Link */
 .backLink {
   display: inline-flex;
@@ -29,7 +81,6 @@
   text-decoration: none;
   font-size: var(--font-size-1);
   font-weight: 500;
-  margin-bottom: var(--space-5);
   transition: color 150ms var(--ease);
 }
 
@@ -612,6 +663,110 @@
   font-size: var(--font-size-1);
   color: var(--color-neutral-11);
   line-height: 1.6;
+}
+
+/* Add task form */
+.addTaskForm {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-2);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-3);
+}
+
+.addTaskInput {
+  flex: 1;
+  min-width: 200px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-neutral-3);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-3);
+  color: var(--color-neutral-12);
+  font-size: var(--font-size-1);
+  font-family: inherit;
+}
+
+.addTaskInput:focus {
+  outline: none;
+  border-color: var(--color-accent-7);
+  box-shadow: 0 0 0 2px var(--color-accent-3);
+}
+
+.addTaskInput::placeholder {
+  color: var(--color-neutral-9);
+}
+
+.addTaskSelect,
+.addTaskDate {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-neutral-3);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-3);
+  color: var(--color-neutral-12);
+  font-size: var(--font-size-1);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.addTaskSelect:focus,
+.addTaskDate:focus {
+  outline: none;
+  border-color: var(--color-accent-7);
+}
+
+.addTaskBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-accent-9);
+  border: none;
+  border-radius: var(--radius-3);
+  color: var(--color-accent-contrast);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms var(--ease);
+  white-space: nowrap;
+}
+
+.addTaskBtn:hover {
+  background: var(--color-accent-10);
+}
+
+.taskToggleBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.taskDeleteBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-neutral-8);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-2);
+  transition: all 150ms var(--ease);
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.taskItem:hover .taskDeleteBtn {
+  opacity: 1;
+}
+
+.taskDeleteBtn:hover {
+  background: var(--color-error-3);
+  color: var(--color-error-9);
 }
 
 /* ---- Tasks Tab ---- */

@@ -1,10 +1,14 @@
 import React from "react";
-import { Search, FolderOpen, LayoutGrid, List, Flame, Zap, TrendingUp, DollarSign } from "lucide-react";
+import { Search, FolderOpen, LayoutGrid, List, Flame, Zap, TrendingUp, DollarSign, Plus, Pencil, Trash2 } from "lucide-react";
 import classNames from "classnames";
 import { Link } from "react-router";
+import { toast } from "sonner";
 import type { Route } from "./+types/projects";
 import { ProjectCard } from "~/components/project-card";
-import { mockProjects, type ProjectStatus, type CostType, type Chain } from "~/data/projects";
+import type { Project, ProjectStatus, CostType } from "~/data/projects";
+import { useStore } from "~/hooks/use-store";
+import ProjectFormDrawer from "~/components/projects/project-form-drawer";
+import ConfirmDeleteDialog from "~/components/confirm-delete-dialog";
 import styles from "./projects.module.css";
 
 export function meta({}: Route.MetaArgs) {
@@ -24,26 +28,32 @@ const POTENTIAL_COLORS: Record<string, string> = {
 };
 
 export default function Projects() {
+  const { projects, addProject, updateProject, deleteProject } = useStore();
+
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<ProjectStatus | "all">("all");
   const [costFilter, setCostFilter] = React.useState<CostType | "all">("all");
   const [ecosystemFilter, setEcosystemFilter] = React.useState("All");
   const [viewMode, setViewMode] = React.useState<"grid" | "table">("grid");
 
-  const filteredProjects = mockProjects.filter((project) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.ecosystem.some((e) => e.toLowerCase().includes(searchQuery.toLowerCase()));
+  const [showForm, setShowForm] = React.useState(false);
+  const [editingProject, setEditingProject] = React.useState<Project | null>(null);
+  const [deletingProject, setDeletingProject] = React.useState<Project | null>(null);
 
-    const matchesStatus = statusFilter === "all" || project.status === statusFilter;
-    const matchesCost = costFilter === "all" || project.costType === costFilter;
-    const matchesEcosystem =
-      ecosystemFilter === "All" || project.ecosystem.some((e) => e.toLowerCase().includes(ecosystemFilter.toLowerCase()));
-
-    return matchesSearch && matchesStatus && matchesCost && matchesEcosystem;
-  });
+  const filteredProjects = React.useMemo(() => {
+    return projects.filter((project) => {
+      const matchesSearch =
+        searchQuery === "" ||
+        project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.ecosystem.some((e) => e.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesStatus = statusFilter === "all" || project.status === statusFilter;
+      const matchesCost = costFilter === "all" || project.costType === costFilter;
+      const matchesEcosystem =
+        ecosystemFilter === "All" || project.ecosystem.some((e) => e.toLowerCase().includes(ecosystemFilter.toLowerCase()));
+      return matchesSearch && matchesStatus && matchesCost && matchesEcosystem;
+    });
+  }, [projects, searchQuery, statusFilter, costFilter, ecosystemFilter]);
 
   const totalProjects = filteredProjects.length;
   const activeProjects = filteredProjects.filter((p) => p.status === "active" || p.status === "snapshot").length;
@@ -55,6 +65,39 @@ export default function Projects() {
       return acc + (match ? parseFloat(match[0]) : 0);
     }, 0);
 
+  function handleSaveProject(project: Project) {
+    if (editingProject) {
+      updateProject(project);
+    } else {
+      addProject(project);
+    }
+  }
+
+  function handleDeleteConfirm() {
+    if (!deletingProject) return;
+    deleteProject(deletingProject.id);
+    toast.success(`"${deletingProject.name}" deleted.`);
+    setDeletingProject(null);
+  }
+
+  function openEdit(project: Project, e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditingProject(project);
+    setShowForm(true);
+  }
+
+  function openDelete(project: Project, e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeletingProject(project);
+  }
+
+  function handleFormClose() {
+    setShowForm(false);
+    setEditingProject(null);
+  }
+
   return (
     <main className={styles.projects}>
       <div className={styles.container}>
@@ -63,21 +106,26 @@ export default function Projects() {
             <h1 className={styles.title}>Project Directory</h1>
             <p className={styles.subtitle}>Intelligence hub for all your airdrop opportunities</p>
           </div>
-          <div className={styles.viewToggle}>
-            <button
-              className={classNames(styles.viewButton, { [styles.viewButtonActive]: viewMode === "grid" })}
-              onClick={() => setViewMode("grid")}
-              title="Grid View"
-            >
-              <LayoutGrid size={18} />
+          <div className={styles.headerActions}>
+            <button className={styles.addButton} onClick={() => { setEditingProject(null); setShowForm(true); }} type="button">
+              <Plus size={16} /> Add Project
             </button>
-            <button
-              className={classNames(styles.viewButton, { [styles.viewButtonActive]: viewMode === "table" })}
-              onClick={() => setViewMode("table")}
-              title="Table View"
-            >
-              <List size={18} />
-            </button>
+            <div className={styles.viewToggle}>
+              <button
+                className={classNames(styles.viewButton, { [styles.viewButtonActive]: viewMode === "grid" })}
+                onClick={() => setViewMode("grid")}
+                title="Grid View"
+              >
+                <LayoutGrid size={18} />
+              </button>
+              <button
+                className={classNames(styles.viewButton, { [styles.viewButtonActive]: viewMode === "table" })}
+                onClick={() => setViewMode("table")}
+                title="Table View"
+              >
+                <List size={18} />
+              </button>
+            </div>
           </div>
         </header>
 
@@ -163,25 +211,25 @@ export default function Projects() {
           </div>
         </div>
 
-        {/* Results count + priority highlights */}
+        {/* Results count */}
         <div className={styles.resultsBar}>
           <span className={styles.resultsCount}>
             {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""}
           </span>
           <div className={styles.highlights}>
-            {mockProjects.filter((p) => p.isHot).length > 0 && (
+            {projects.filter((p) => p.isHot).length > 0 && (
               <span className={styles.highlightBadge}>
-                <Flame size={12} /> {mockProjects.filter((p) => p.isHot).length} Hot
+                <Flame size={12} /> {projects.filter((p) => p.isHot).length} Hot
               </span>
             )}
-            {mockProjects.filter((p) => p.isNew).length > 0 && (
+            {projects.filter((p) => p.isNew).length > 0 && (
               <span className={classNames(styles.highlightBadge, styles.highlightNew)}>
-                <Zap size={12} /> {mockProjects.filter((p) => p.isNew).length} New
+                <Zap size={12} /> {projects.filter((p) => p.isNew).length} New
               </span>
             )}
-            {mockProjects.filter((p) => p.snapshotDate).length > 0 && (
+            {projects.filter((p) => p.snapshotDate).length > 0 && (
               <span className={classNames(styles.highlightBadge, styles.highlightDeadline)}>
-                {mockProjects.filter((p) => p.snapshotDate).length} Snapshot Upcoming
+                {projects.filter((p) => p.snapshotDate).length} Snapshot Upcoming
               </span>
             )}
           </div>
@@ -192,12 +240,22 @@ export default function Projects() {
           <div className={styles.emptyState}>
             <FolderOpen className={styles.emptyIcon} />
             <h3 className={styles.emptyTitle}>No Projects Found</h3>
-            <p>Try adjusting your filters or search query</p>
+            <p>Try adjusting your filters or <button className={styles.emptyAddBtn} onClick={() => setShowForm(true)}>add a new project</button>.</p>
           </div>
         ) : viewMode === "grid" ? (
           <div className={styles.grid}>
             {filteredProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <div key={project.id} className={styles.cardWrapper}>
+                <ProjectCard project={project} />
+                <div className={styles.cardActions}>
+                  <button className={styles.cardActionBtn} onClick={(e) => openEdit(project, e)} title="Edit" type="button">
+                    <Pencil size={13} />
+                  </button>
+                  <button className={classNames(styles.cardActionBtn, styles.cardActionDelete)} onClick={(e) => openDelete(project, e)} title="Delete" type="button">
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
@@ -276,9 +334,11 @@ export default function Projects() {
                         </span>
                       </td>
                       <td>
-                        <Link to={`/projects/${project.id}`} className={styles.tableViewBtn}>
-                          View →
-                        </Link>
+                        <div className={styles.tableRowActions}>
+                          <Link to={`/projects/${project.id}`} className={styles.tableViewBtn}>View →</Link>
+                          <button className={styles.tableActionBtn} onClick={(e) => openEdit(project, e)} title="Edit" type="button"><Pencil size={13} /></button>
+                          <button className={classNames(styles.tableActionBtn, styles.tableActionDelete)} onClick={(e) => openDelete(project, e)} title="Delete" type="button"><Trash2 size={13} /></button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -288,6 +348,23 @@ export default function Projects() {
           </div>
         )}
       </div>
+
+      {showForm && (
+        <ProjectFormDrawer
+          project={editingProject}
+          onClose={handleFormClose}
+          onSave={handleSaveProject}
+        />
+      )}
+
+      {deletingProject && (
+        <ConfirmDeleteDialog
+          title={`Delete "${deletingProject.name}"?`}
+          description="This will permanently remove the project and all its data. This action cannot be undone."
+          onCancel={() => setDeletingProject(null)}
+          onConfirm={handleDeleteConfirm}
+        />
+      )}
     </main>
   );
 }

@@ -192,3 +192,45 @@
 .progressFillComplete {
   background: var(--color-success-9);
 }
+
+/* Quick actions - shown on hover */
+.cardQuickActions {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: flex;
+  gap: var(--space-1);
+  opacity: 0;
+  transition: opacity 150ms var(--ease);
+}
+
+.card:hover .cardQuickActions {
+  opacity: 1;
+}
+
+.cardQuickBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-2);
+  background: var(--color-neutral-3);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  color: var(--color-neutral-10);
+  cursor: pointer;
+  transition: all 150ms var(--ease);
+  box-shadow: var(--shadow-1);
+}
+
+.cardQuickBtn:hover {
+  background: var(--color-accent-3);
+  color: var(--color-accent-11);
+  border-color: var(--color-accent-6);
+}
+
+.cardQuickDelete:hover {
+  background: var(--color-error-3);
+  color: var(--color-error-9);
+  border-color: var(--color-error-6);
+}

@@ -8,6 +8,8 @@ import styles from "./task-board-view.module.css";
 interface TaskBoardViewProps {
   tasks: Task[];
   onTaskClick?: (task: Task) => void;
+  onEditTask?: (task: Task) => void;
+  onDeleteTask?: (task: Task) => void;
 }
 
 const COLUMNS: TaskStatus[] = ["backlog", "in-progress", "review", "completed"];
@@ -19,7 +21,7 @@ const INDICATOR_STYLES: Record<TaskStatus, string> = {
   completed: styles.indicatorCompleted,
 };
 
-export default function TaskBoardView({ tasks, onTaskClick }: TaskBoardViewProps) {
+export default function TaskBoardView({ tasks, onTaskClick, onEditTask, onDeleteTask }: TaskBoardViewProps) {
   return (
     <div className={styles.board}>
       {COLUMNS.map((status) => {
@@ -37,7 +39,7 @@ export default function TaskBoardView({ tasks, onTaskClick }: TaskBoardViewProps
               {colTasks.length === 0 ? (
                 <div className={styles.emptyState}>No tasks</div>
               ) : (
-                colTasks.map((task) => <TaskCard key={task.id} task={task} onClick={onTaskClick ? () => onTaskClick(task) : undefined} />)
+                colTasks.map((task) => <TaskCard key={task.id} task={task} onClick={onTaskClick ? () => onTaskClick(task) : undefined} onEdit={onEditTask ? () => onEditTask(task) : undefined} onDelete={onDeleteTask ? () => onDeleteTask(task) : undefined} />)
               )}
             </div>
           </div>

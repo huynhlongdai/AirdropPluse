@@ -6,7 +6,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 2fr 120px 100px 120px 160px 120px;
+  grid-template-columns: 2fr 120px 100px 120px 160px 120px 80px;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
@@ -28,7 +28,7 @@
 
 .header {
   display: grid;
-  grid-template-columns: 2fr 120px 100px 120px 160px 120px;
+  grid-template-columns: 2fr 120px 100px 120px 160px 120px 80px;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-4);
@@ -162,10 +162,43 @@
   color: var(--color-neutral-8);
 }
 
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  justify-content: flex-end;
+}
+
+.rowActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-2);
+  background: transparent;
+  border: var(--border-size-1) solid var(--color-neutral-5);
+  color: var(--color-neutral-10);
+  cursor: pointer;
+  transition: all 150ms var(--ease);
+}
+
+.rowActionBtn:hover {
+  background: var(--color-neutral-4);
+  color: var(--color-accent-11);
+}
+
+.rowActionDelete:hover {
+  background: var(--color-error-3);
+  color: var(--color-error-9);
+  border-color: var(--color-error-6);
+}
+
 @media (max-width: 900px) {
   .header { display: none; }
   .row {
     grid-template-columns: 1fr;
     gap: var(--space-2);
   }
+  .rowActions { justify-content: flex-start; }
 }

@@ -2,6 +2,8 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration }
 
 import type { Route } from "./+types/root";
 import { Toaster } from "./components/ui/toaster/toaster";
+import { Toaster as SonnerToaster } from "./components/ui/sonner/sonner";
+import { StoreProvider } from "./hooks/use-store";
 import colorSchemeApi from "@dazl/color-scheme/client?url";
 
 import "./styles/reset.css";
@@ -47,8 +49,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <StoreProvider>
+          {children}
+        </StoreProvider>
         <Toaster />
+        <SonnerToaster richColors position="top-right" />
         <ScrollRestoration />
         <Scripts />
       </body>

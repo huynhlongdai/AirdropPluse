@@ -1,5 +1,5 @@
 import React from "react";
-import { Zap, Twitter, RefreshCw, Flame, CalendarClock } from "lucide-react";
+import { Zap, Twitter, RefreshCw, Flame, CalendarClock, Pencil, Trash2 } from "lucide-react";
 import classNames from "classnames";
 import type { Task } from "~/data/tasks";
 import styles from "./task-list-view.module.css";
@@ -7,6 +7,8 @@ import styles from "./task-list-view.module.css";
 interface TaskListViewProps {
   tasks: Task[];
   onTaskClick?: (task: Task) => void;
+  onEditTask?: (task: Task) => void;
+  onDeleteTask?: (task: Task) => void;
 }
 
 const TYPE_ICONS: Record<Task["type"], React.ReactNode> = {
@@ -54,7 +56,7 @@ function formatDeadline(dateStr: string) {
   return { label: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }), urgent: false };
 }
 
-export default function TaskListView({ tasks, onTaskClick }: TaskListViewProps) {
+export default function TaskListView({ tasks, onTaskClick, onEditTask, onDeleteTask }: TaskListViewProps) {
   return (
     <div className={styles.list}>
       <div className={styles.header}>
@@ -64,6 +66,7 @@ export default function TaskListView({ tasks, onTaskClick }: TaskListViewProps) 
         <span>Wallets</span>
         <span>Deadline</span>
         <span>Est. Gas</span>
+        <span></span>
       </div>
       {tasks.map((task) => {
         const doneCount = task.executions.filter((e) => e.status === "done").length;
@@ -150,6 +153,20 @@ export default function TaskListView({ tasks, onTaskClick }: TaskListViewProps) 
             ) : (
               <span className={classNames(styles.gasFee, styles.noGas)}>Free</span>
             )}
+
+            {/* Actions */}
+            <div className={styles.rowActions} onClick={(e) => e.stopPropagation()}>
+              {onEditTask && (
+                <button className={styles.rowActionBtn} onClick={() => onEditTask(task)} title="Edit" type="button">
+                  <Pencil size={13} />
+                </button>
+              )}
+              {onDeleteTask && (
+                <button className={classNames(styles.rowActionBtn, styles.rowActionDelete)} onClick={() => onDeleteTask(task)} title="Delete" type="button">
+                  <Trash2 size={13} />
+                </button>
+              )}
+            </div>
           </div>
         );
       })}

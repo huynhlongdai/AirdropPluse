@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, Zap, Twitter, CalendarClock, RefreshCw, AlertCircle, Flame } from "lucide-react";
+import { Link, Zap, Twitter, CalendarClock, RefreshCw, AlertCircle, Flame, Pencil, Trash2 } from "lucide-react";
 import classNames from "classnames";
 import type { Task } from "~/data/tasks";
 import { TASK_TYPE_LABELS } from "~/data/tasks";
@@ -9,6 +9,8 @@ interface TaskCardProps {
   task: Task;
   className?: string;
   onClick?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 const TYPE_ICONS: Record<Task["type"], React.ReactNode> = {
@@ -36,7 +38,7 @@ function formatDeadline(dateStr: string) {
   return { label: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }), urgent: false };
 }
 
-export default function TaskCard({ task, className, onClick }: TaskCardProps) {
+export default function TaskCard({ task, className, onClick, onEdit, onDelete }: TaskCardProps) {
   const doneCount = task.executions.filter((e) => e.status === "done").length;
   const totalCount = task.executions.length;
   const progress = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
@@ -135,6 +137,21 @@ export default function TaskCard({ task, className, onClick }: TaskCardProps) {
             className={classNames(styles.progressFill, { [styles.progressFillComplete]: progress === 100 })}
             style={{ width: `${progress}%` }}
           />
+        </div>
+      )}
+
+      {(onEdit || onDelete) && (
+        <div className={styles.cardQuickActions} onClick={(e) => e.stopPropagation()}>
+          {onEdit && (
+            <button className={styles.cardQuickBtn} onClick={onEdit} title="Edit" type="button">
+              <Pencil size={12} />
+            </button>
+          )}
+          {onDelete && (
+            <button className={classNames(styles.cardQuickBtn, styles.cardQuickDelete)} onClick={onDelete} title="Delete" type="button">
+              <Trash2 size={12} />
+            </button>
+          )}
         </div>
       )}
     </div>

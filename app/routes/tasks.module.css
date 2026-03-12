@@ -184,6 +184,38 @@
   border-color: var(--color-error-9);
 }
 
+/* Add button */
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-accent-9);
+  border: none;
+  border-radius: var(--radius-3);
+  color: var(--color-accent-contrast);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms var(--ease);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.addButton:hover {
+  background: var(--color-accent-10);
+}
+
+.emptyAddBtn {
+  background: none;
+  border: none;
+  color: var(--color-accent-11);
+  cursor: pointer;
+  font-size: inherit;
+  text-decoration: underline;
+  padding: 0;
+}
+
 /* ── Empty state ─────────────────────────────────────── */
 .emptyState {
   text-align: center;

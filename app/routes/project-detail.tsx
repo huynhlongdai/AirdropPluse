@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useNavigate } from "react-router";
 import {
   ArrowLeft,
   Globe,
@@ -20,15 +20,21 @@ import {
   Star,
   Shield,
   DollarSign,
+  Pencil,
+  Trash2,
+  Plus,
 } from "lucide-react";
 import classNames from "classnames";
+import { toast } from "sonner";
 import type { Route } from "./+types/project-detail";
-import { mockProjects } from "~/data/projects";
+import type { Project } from "~/data/projects";
+import { useStore } from "~/hooks/use-store";
+import ProjectFormDrawer from "~/components/projects/project-form-drawer";
+import ConfirmDeleteDialog from "~/components/confirm-delete-dialog";
 import styles from "./project-detail.module.css";
 
 export function meta({ params }: Route.MetaArgs) {
-  const project = mockProjects.find((p) => p.id === params.id);
-  return [{ title: project ? `${project.name} - AirdropPulse` : "Project - AirdropPulse" }];
+  return [{ title: "Project - AirdropPulse" }];
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -57,9 +63,13 @@ type Tab = "general" | "tasks" | "wallets" | "updates";
 
 export default function ProjectDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { projects, updateProject, deleteProject } = useStore();
   const [activeTab, setActiveTab] = React.useState<Tab>("general");
+  const [showEditForm, setShowEditForm] = React.useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
 
-  const project = mockProjects.find((p) => p.id === id);
+  const project = projects.find((p) => p.id === id);
 
   if (!project) {
     return (
@@ -72,18 +82,39 @@ export default function ProjectDetail() {
     );
   }
 
-  const completedTasks = project.tasks.filter((t) => t.completed).length;
-  const totalTasks = project.tasks.length;
+  const safeProject = project;
+  const completedTasks = safeProject.tasks.filter((t) => t.completed).length;
+  const totalTasks = safeProject.tasks.length;
   const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  function handleSave(updated: Project) {
+    updateProject(updated);
+  }
+
+  function handleDelete() {
+    deleteProject(safeProject.id);
+    toast.success(`"${safeProject.name}" deleted.`);
+    navigate("/projects");
+  }
 
   return (
     <main className={styles.page}>
       <div className={styles.container}>
         {/* Back nav */}
-        <Link to="/projects" className={styles.backLink}>
-          <ArrowLeft size={16} />
-          Back to Projects
-        </Link>
+        <div className={styles.topBar}>
+          <Link to="/projects" className={styles.backLink}>
+            <ArrowLeft size={16} />
+            Back to Projects
+          </Link>
+          <div className={styles.topActions}>
+            <button className={styles.editBtn} onClick={() => setShowEditForm(true)} type="button">
+              <Pencil size={14} /> Edit
+            </button>
+            <button className={styles.deleteBtn} onClick={() => setShowDeleteConfirm(true)} type="button">
+              <Trash2 size={14} /> Delete
+            </button>
+          </div>
+        </div>
 
         {/* Hero */}
         <div className={styles.hero}>
@@ -235,33 +266,39 @@ export default function ProjectDetail() {
 
         {/* Tab Content */}
         <div className={styles.tabContent}>
-          {activeTab === "general" && (
-            <GeneralTab project={project} />
-          )}
-          {activeTab === "tasks" && (
-            <TasksTab project={project} />
-          )}
-          {activeTab === "wallets" && (
-            <WalletsTab project={project} />
-          )}
-          {activeTab === "updates" && (
-            <UpdatesTab project={project} />
-          )}
+          {activeTab === "general" && <GeneralTab project={project} />}
+          {activeTab === "tasks" && <TasksTab project={project} onUpdate={updateProject} />}
+          {activeTab === "wallets" && <WalletsTab project={project} />}
+          {activeTab === "updates" && <UpdatesTab project={project} />}
         </div>
       </div>
+
+      {showEditForm && (
+        <ProjectFormDrawer
+          project={project}
+          onClose={() => setShowEditForm(false)}
+          onSave={handleSave}
+        />
+      )}
+
+      {showDeleteConfirm && (
+        <ConfirmDeleteDialog
+          title={`Delete "${project.name}"?`}
+          description="This will permanently remove the project and all associated data. This action cannot be undone."
+          onCancel={() => setShowDeleteConfirm(false)}
+          onConfirm={handleDelete}
+        />
+      )}
     </main>
   );
 }
 
 // ---- Sub-components ----
 
-import type { Project } from "~/data/projects";
-
 function GeneralTab({ project }: { project: Project }) {
   return (
     <div className={styles.generalLayout}>
       <div className={styles.generalMain}>
-        {/* Funding Rounds */}
         {project.fundingRounds && project.fundingRounds.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Funding Rounds</h2>
@@ -284,7 +321,6 @@ function GeneralTab({ project }: { project: Project }) {
           </section>
         )}
 
-        {/* Milestones / Roadmap */}
         {project.milestones.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Roadmap & Milestones</h2>
@@ -308,7 +344,6 @@ function GeneralTab({ project }: { project: Project }) {
           </section>
         )}
 
-        {/* Risk Factors */}
         {project.riskFactors.length > 0 && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Risk Assessment</h2>
@@ -325,7 +360,6 @@ function GeneralTab({ project }: { project: Project }) {
       </div>
 
       <aside className={styles.generalSidebar}>
-        {/* Tokenomics */}
         {(project.totalSupply || project.tgeDate) && (
           <div className={styles.sideCard}>
             <h3 className={styles.sideCardTitle}>Tokenomics</h3>
@@ -350,7 +384,6 @@ function GeneralTab({ project }: { project: Project }) {
           </div>
         )}
 
-        {/* Investors */}
         {project.investors && project.investors.length > 0 && (
           <div className={styles.sideCard}>
             <h3 className={styles.sideCardTitle}>Backers</h3>
@@ -362,7 +395,6 @@ function GeneralTab({ project }: { project: Project }) {
           </div>
         )}
 
-        {/* Important Dates */}
         <div className={styles.sideCard}>
           <h3 className={styles.sideCardTitle}>Key Dates</h3>
           {project.snapshotDate && (
@@ -388,7 +420,6 @@ function GeneralTab({ project }: { project: Project }) {
           )}
         </div>
 
-        {/* Notes */}
         {project.notes && (
           <div className={styles.sideCard}>
             <h3 className={styles.sideCardTitle}>Personal Notes</h3>
@@ -400,10 +431,64 @@ function GeneralTab({ project }: { project: Project }) {
   );
 }
 
-function TasksTab({ project }: { project: Project }) {
+interface TasksTabProps {
+  project: Project;
+  onUpdate: (p: Project) => void;
+}
+
+function TasksTab({ project, onUpdate }: TasksTabProps) {
+  const [newTaskDesc, setNewTaskDesc] = React.useState("");
+  const [newTaskPriority, setNewTaskPriority] = React.useState<"low" | "medium" | "high">("medium");
+  const [newTaskDue, setNewTaskDue] = React.useState("");
+  const [deletingTaskId, setDeletingTaskId] = React.useState<string | null>(null);
+
   const pending = project.tasks.filter((t) => !t.completed);
   const done = project.tasks.filter((t) => t.completed);
   const progress = project.tasks.length > 0 ? Math.round((done.length / project.tasks.length) * 100) : 0;
+
+  function toggleTask(taskId: string) {
+    const updated: Project = {
+      ...project,
+      tasks: project.tasks.map((t) =>
+        t.id === taskId
+          ? { ...t, completed: !t.completed, completedAt: !t.completed ? new Date().toISOString().slice(0, 10) : undefined }
+          : t
+      ),
+      updatedAt: new Date().toISOString().slice(0, 10),
+    };
+    onUpdate(updated);
+  }
+
+  function addTask() {
+    if (!newTaskDesc.trim()) return;
+    const newTask = {
+      id: `t-${Date.now()}`,
+      description: newTaskDesc.trim(),
+      completed: false,
+      priority: newTaskPriority,
+      dueDate: newTaskDue || undefined,
+    };
+    const updated: Project = {
+      ...project,
+      tasks: [...project.tasks, newTask],
+      updatedAt: new Date().toISOString().slice(0, 10),
+    };
+    onUpdate(updated);
+    setNewTaskDesc("");
+    setNewTaskDue("");
+    toast.success("Task added to project.");
+  }
+
+  function deleteTask(taskId: string) {
+    const updated: Project = {
+      ...project,
+      tasks: project.tasks.filter((t) => t.id !== taskId),
+      updatedAt: new Date().toISOString().slice(0, 10),
+    };
+    onUpdate(updated);
+    setDeletingTaskId(null);
+    toast.success("Task removed.");
+  }
 
   return (
     <div className={styles.tasksTab}>
@@ -414,12 +499,32 @@ function TasksTab({ project }: { project: Project }) {
         <span className={styles.tasksProgressLabel}>{done.length} of {project.tasks.length} completed ({progress}%)</span>
       </div>
 
+      {/* Add task form */}
+      <div className={styles.addTaskForm}>
+        <input
+          className={styles.addTaskInput}
+          value={newTaskDesc}
+          onChange={(e) => setNewTaskDesc(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && addTask()}
+          placeholder="Add a new task to this project..."
+        />
+        <select className={styles.addTaskSelect} value={newTaskPriority} onChange={(e) => setNewTaskPriority(e.target.value as "low" | "medium" | "high")}>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <input type="date" className={styles.addTaskDate} value={newTaskDue} onChange={(e) => setNewTaskDue(e.target.value)} />
+        <button className={styles.addTaskBtn} onClick={addTask} type="button"><Plus size={14} /> Add Task</button>
+      </div>
+
       {pending.length > 0 && (
         <div className={styles.taskGroup}>
           <h3 className={styles.taskGroupTitle}>Pending ({pending.length})</h3>
           {pending.map((task) => (
             <div key={task.id} className={styles.taskItem}>
-              <Circle size={18} className={styles.taskIconPending} />
+              <button className={styles.taskToggleBtn} onClick={() => toggleTask(task.id)} type="button">
+                <Circle size={18} className={styles.taskIconPending} />
+              </button>
               <div className={styles.taskBody}>
                 <span className={styles.taskDesc}>{task.description}</span>
                 <div className={styles.taskMeta}>
@@ -435,6 +540,9 @@ function TasksTab({ project }: { project: Project }) {
                   )}
                 </div>
               </div>
+              <button className={styles.taskDeleteBtn} onClick={() => setDeletingTaskId(task.id)} type="button">
+                <Trash2 size={14} />
+              </button>
             </div>
           ))}
         </div>
@@ -445,7 +553,9 @@ function TasksTab({ project }: { project: Project }) {
           <h3 className={styles.taskGroupTitle}>Completed ({done.length})</h3>
           {done.map((task) => (
             <div key={task.id} className={classNames(styles.taskItem, styles.taskItemDone)}>
-              <CheckCircle2 size={18} className={styles.taskIconDone} />
+              <button className={styles.taskToggleBtn} onClick={() => toggleTask(task.id)} type="button">
+                <CheckCircle2 size={18} className={styles.taskIconDone} />
+              </button>
               <div className={styles.taskBody}>
                 <span className={styles.taskDesc}>{task.description}</span>
                 {task.completedAt && (
@@ -454,9 +564,21 @@ function TasksTab({ project }: { project: Project }) {
                   </div>
                 )}
               </div>
+              <button className={styles.taskDeleteBtn} onClick={() => setDeletingTaskId(task.id)} type="button">
+                <Trash2 size={14} />
+              </button>
             </div>
           ))}
         </div>
+      )}
+
+      {deletingTaskId && (
+        <ConfirmDeleteDialog
+          title="Remove task?"
+          description="This task will be permanently removed from the project."
+          onCancel={() => setDeletingTaskId(null)}
+          onConfirm={() => deleteTask(deletingTaskId)}
+        />
       )}
     </div>
   );
@@ -514,16 +636,16 @@ function WalletsTab({ project }: { project: Project }) {
             <Users size={16} /> Linked Profiles ({project.linkedIdentities.length})
           </h2>
           <div className={styles.identityCards}>
-            {project.linkedIdentities.map((id) => (
-              <div key={id.identityId} className={styles.identityCard}>
+            {project.linkedIdentities.map((ident) => (
+              <div key={ident.identityId} className={styles.identityCard}>
                 <div className={styles.identityAvatar}>
                   <Users size={16} />
                 </div>
                 <div className={styles.identityInfo}>
-                  <div className={styles.identityUsername}>{id.username}</div>
-                  <div className={styles.identityPlatform}>{id.platform}</div>
+                  <div className={styles.identityUsername}>{ident.username}</div>
+                  <div className={styles.identityPlatform}>{ident.platform}</div>
                 </div>
-                <div className={styles.identityTasks}>{id.tasksCompleted} tasks done</div>
+                <div className={styles.identityTasks}>{ident.tasksCompleted} tasks done</div>
               </div>
             ))}
           </div>

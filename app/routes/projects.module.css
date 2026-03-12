@@ -29,6 +29,34 @@
   color: var(--color-neutral-11);
 }
 
+/* Header Actions */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-accent-9);
+  border: none;
+  border-radius: var(--radius-3);
+  color: var(--color-accent-contrast);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms var(--ease);
+  white-space: nowrap;
+}
+
+.addButton:hover {
+  background: var(--color-accent-10);
+}
+
 /* View Toggle */
 .viewToggle {
   display: flex;
@@ -235,11 +263,67 @@
   color: var(--amber-11);
 }
 
+/* Card wrapper with action overlay */
+.cardWrapper {
+  position: relative;
+}
+
+.cardWrapper:hover .cardActions {
+  opacity: 1;
+}
+
+.cardActions {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: flex;
+  gap: var(--space-1);
+  opacity: 0;
+  transition: opacity 150ms var(--ease);
+  z-index: 10;
+}
+
+.cardActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-2);
+  background: var(--color-neutral-2);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  color: var(--color-neutral-10);
+  cursor: pointer;
+  transition: all 150ms var(--ease);
+  box-shadow: var(--shadow-1);
+}
+
+.cardActionBtn:hover {
+  background: var(--color-neutral-3);
+  color: var(--color-accent-11);
+}
+
+.cardActionDelete:hover {
+  background: var(--color-error-3);
+  color: var(--color-error-9);
+  border-color: var(--color-error-6);
+}
+
 /* Grid View */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: var(--space-5);
+}
+
+.emptyAddBtn {
+  background: none;
+  border: none;
+  color: var(--color-accent-11);
+  cursor: pointer;
+  font-size: inherit;
+  text-decoration: underline;
+  padding: 0;
 }
 
 /* Empty State */
@@ -462,6 +546,37 @@
 
 .tableCostPaid {
   color: var(--color-neutral-11);
+}
+
+.tableRowActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tableActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-2);
+  background: transparent;
+  border: var(--border-size-1) solid var(--color-neutral-5);
+  color: var(--color-neutral-10);
+  cursor: pointer;
+  transition: all 150ms var(--ease);
+}
+
+.tableActionBtn:hover {
+  background: var(--color-neutral-4);
+  color: var(--color-accent-11);
+}
+
+.tableActionDelete:hover {
+  background: var(--color-error-3);
+  color: var(--color-error-9);
+  border-color: var(--color-error-6);
 }
 
 .tableViewBtn {
