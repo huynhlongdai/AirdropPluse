@@ -1,0 +1,193 @@
+.projects {
+  min-height: 100vh;
+  background: var(--color-neutral-1);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+
+.header {
+  margin-bottom: var(--space-6);
+}
+
+.title {
+  font: var(--font-display);
+  color: var(--color-neutral-12);
+  margin-bottom: var(--space-2);
+}
+
+.subtitle {
+  font: var(--font-subheading);
+  color: var(--color-neutral-11);
+}
+
+.controls {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.searchBar {
+  flex: 1;
+  min-width: 300px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-2);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-3);
+  font-size: var(--font-size-1);
+  color: var(--color-neutral-12);
+  transition: all 150ms var(--ease);
+}
+
+.searchBar:focus {
+  outline: none;
+  border-color: var(--color-accent-9);
+  box-shadow: 0 0 0 3px var(--color-accent-3);
+}
+
+.searchBar::placeholder {
+  color: var(--color-neutral-10);
+}
+
+.filters {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.filterLabel {
+  font-size: var(--font-size-0);
+  font-weight: 600;
+  color: var(--color-neutral-11);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filterButtons {
+  display: flex;
+  gap: var(--space-2);
+  background: var(--color-neutral-3);
+  padding: var(--space-1);
+  border-radius: var(--radius-3);
+}
+
+.filterButton {
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  color: var(--color-neutral-11);
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-0);
+  font-weight: 500;
+  transition: all 150ms var(--ease);
+  border: none;
+  text-transform: capitalize;
+}
+
+.filterButton:hover {
+  background: var(--color-neutral-4);
+}
+
+.filterButtonActive {
+  background: var(--color-accent-9);
+  color: var(--color-accent-contrast);
+}
+
+.stats {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  background: var(--color-neutral-2);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-3);
+}
+
+.stat {
+  flex: 1;
+  text-align: center;
+}
+
+.statValue {
+  font-size: var(--font-size-4);
+  font-weight: 700;
+  color: var(--color-accent-11);
+  margin-bottom: var(--space-1);
+}
+
+.statLabel {
+  font-size: var(--font-size-0);
+  color: var(--color-neutral-11);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-5);
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--space-9);
+  color: var(--color-neutral-11);
+}
+
+.emptyIcon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--space-4);
+  color: var(--color-neutral-8);
+}
+
+.emptyTitle {
+  font-size: var(--font-size-3);
+  font-weight: 600;
+  color: var(--color-neutral-12);
+  margin-bottom: var(--space-2);
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: var(--space-4);
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .searchBar {
+    min-width: 100%;
+  }
+
+  .filters {
+    width: 100%;
+  }
+
+  .filterGroup {
+    width: 100%;
+  }
+
+  .filterButtons {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .stats {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

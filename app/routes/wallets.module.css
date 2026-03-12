@@ -1,0 +1,342 @@
+.wallets {
+  min-height: 100vh;
+  background: var(--color-neutral-1);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+
+.header {
+  margin-bottom: var(--space-6);
+}
+
+.title {
+  font: var(--font-display);
+  color: var(--color-neutral-12);
+  margin-bottom: var(--space-2);
+}
+
+.subtitle {
+  font: var(--font-subheading);
+  color: var(--color-neutral-11);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  background: var(--color-neutral-3);
+  padding: var(--space-1);
+  border-radius: var(--radius-3);
+}
+
+.tab {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  color: var(--color-neutral-11);
+  border-radius: var(--radius-2);
+  font-weight: 600;
+  transition: all 150ms var(--ease);
+  border: none;
+}
+
+.tab:hover {
+  background: var(--color-neutral-4);
+}
+
+.tabActive {
+  background: var(--color-accent-9);
+  color: var(--color-accent-contrast);
+}
+
+.walletsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: var(--space-5);
+}
+
+.walletCard {
+  background: var(--color-neutral-2);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-4);
+  padding: var(--space-5);
+  transition: all 200ms var(--ease);
+}
+
+.walletCard:hover {
+  border-color: var(--color-accent-7);
+  box-shadow: var(--shadow-2);
+  transform: translateY(-2px);
+}
+
+.walletHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.walletInfo {
+  flex: 1;
+}
+
+.walletName {
+  font-size: var(--font-size-3);
+  font-weight: 700;
+  color: var(--color-neutral-12);
+  margin-bottom: var(--space-2);
+}
+
+.walletGroup {
+  display: inline-flex;
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-accent-3);
+  color: var(--color-accent-11);
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-0);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.walletIcon {
+  width: 48px;
+  height: 48px;
+  padding: var(--space-3);
+  background: linear-gradient(135deg, var(--color-accent-3) 0%, var(--color-accent-5) 100%);
+  border-radius: var(--radius-3);
+  color: var(--color-accent-11);
+}
+
+.walletAddress {
+  font-family: var(--font-monospace-code);
+  font-size: var(--font-size-1);
+  color: var(--color-neutral-11);
+  background: var(--color-neutral-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-2);
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.walletChains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.chainBadge {
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-neutral-4);
+  color: var(--color-neutral-12);
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-0);
+  text-transform: capitalize;
+}
+
+.walletStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: var(--border-size-1) solid var(--color-neutral-5);
+}
+
+.stat {
+  text-align: center;
+}
+
+.statValue {
+  font-size: var(--font-size-4);
+  font-weight: 700;
+  color: var(--color-accent-11);
+  margin-bottom: var(--space-1);
+}
+
+.statLabel {
+  font-size: var(--font-size-0);
+  color: var(--color-neutral-11);
+}
+
+.socialsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.socialCard {
+  background: var(--color-neutral-2);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-4);
+  padding: var(--space-5);
+  transition: all 150ms var(--ease);
+}
+
+.socialCard:hover {
+  border-color: var(--color-accent-7);
+  box-shadow: var(--shadow-1);
+}
+
+.socialHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.socialIcon {
+  width: 40px;
+  height: 40px;
+  padding: var(--space-2);
+  background: var(--color-accent-3);
+  border-radius: var(--radius-3);
+  color: var(--color-accent-11);
+}
+
+.socialInfo {
+  flex: 1;
+}
+
+.socialPlatform {
+  font-size: var(--font-size-0);
+  font-weight: 600;
+  color: var(--color-neutral-11);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.socialUsername {
+  font-size: var(--font-size-2);
+  font-weight: 600;
+  color: var(--color-neutral-12);
+}
+
+.socialMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-1);
+}
+
+.metaLabel {
+  color: var(--color-neutral-11);
+}
+
+.metaValue {
+  color: var(--color-neutral-12);
+  font-weight: 500;
+}
+
+.linkedWallets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.walletBadge {
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-neutral-4);
+  color: var(--color-neutral-12);
+  border-radius: var(--radius-2);
+  font-size: var(--font-size-0);
+  font-family: var(--font-monospace-code);
+}
+
+.matrixSection {
+  background: var(--color-neutral-2);
+  border: var(--border-size-1) solid var(--color-neutral-6);
+  border-radius: var(--radius-4);
+  padding: var(--space-5);
+  overflow-x: auto;
+}
+
+.matrixTitle {
+  font: var(--font-heading);
+  color: var(--color-neutral-12);
+  margin-bottom: var(--space-4);
+}
+
+.matrix {
+  min-width: 800px;
+}
+
+.matrixHeader {
+  display: grid;
+  grid-template-columns: 200px repeat(auto-fill, 100px);
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: var(--border-size-1) solid var(--color-neutral-5);
+}
+
+.matrixHeaderCell {
+  font-size: var(--font-size-0);
+  font-weight: 600;
+  color: var(--color-neutral-11);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.matrixRow {
+  display: grid;
+  grid-template-columns: 200px repeat(auto-fill, 100px);
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: var(--border-size-1) solid var(--color-neutral-4);
+}
+
+.matrixProjectName {
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  color: var(--color-neutral-12);
+  display: flex;
+  align-items: center;
+}
+
+.matrixCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-success-9);
+}
+
+.emptyIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-neutral-7);
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: var(--space-4);
+  }
+
+  .walletsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .tabs {
+    flex-direction: column;
+  }
+
+  .matrixSection {
+    padding: var(--space-3);
+  }
+}
