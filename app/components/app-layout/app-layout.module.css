@@ -72,6 +72,26 @@
   flex-shrink: 0;
 }
 
+.navLabel {
+  flex: 1;
+}
+
+.navBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--space-1);
+  background: var(--color-error-9);
+  color: var(--color-error-contrast);
+  border-radius: var(--radius-round);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 .sidebarFooter {
   padding: var(--space-3) var(--space-2);
   border-top: 1px solid var(--color-neutral-6);
