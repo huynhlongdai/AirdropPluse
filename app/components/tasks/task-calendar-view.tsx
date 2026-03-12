@@ -179,7 +179,7 @@ export default function TaskCalendarView({ tasks, onTaskClick }: TaskCalendarVie
                 <div className={styles.eventMeta}>
                   {task.projectName && <span>{task.projectName}</span>}
                   <span>
-                    {task.executions.filter((e) => e.status === "done").length}/
+                    {task.executions.filter((e) => e.status === "completed").length}/
                     {task.executions.length} wallets done
                   </span>
                   {isUrgent && <span style={{ color: "var(--color-error-10)" }}>⚠ Urgent</span>}

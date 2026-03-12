@@ -69,7 +69,7 @@ export default function TaskListView({ tasks, onTaskClick, onEditTask, onDeleteT
         <span></span>
       </div>
       {tasks.map((task) => {
-        const doneCount = task.executions.filter((e) => e.status === "done").length;
+        const doneCount = task.executions.filter((e) => e.status === "completed").length;
         const totalCount = task.executions.length;
         const progress = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
 

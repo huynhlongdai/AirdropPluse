@@ -5,8 +5,9 @@ import {
   ListChecks, GitBranch, Hash
 } from "lucide-react";
 import classNames from "classnames";
-import type { Task, TaskExecution, Subtask, TaskNote } from "~/data/tasks";
+import type { Task, Subtask, TaskNote } from "~/data/tasks";
 import { TASK_TYPE_LABELS } from "~/data/tasks";
+import ExecutionMatrixTab from "./execution-matrix-tab";
 import styles from "./task-detail-panel.module.css";
 
 interface TaskDetailPanelProps {
@@ -15,7 +16,7 @@ interface TaskDetailPanelProps {
   onTaskUpdate?: (updatedTask: Task) => void;
 }
 
-type TabId = "overview" | "subtasks" | "wallets" | "notes" | "activity";
+type TabId = "overview" | "subtasks" | "execution" | "notes" | "activity";
 
 const TYPE_ICONS: Record<Task["type"], React.ReactNode> = {
   onchain: <Zap size={11} />,
@@ -59,7 +60,7 @@ export default function TaskDetailPanel({ task: initialTask, onClose, onTaskUpda
   // Sync if prop changes (e.g. parent updates)
   React.useEffect(() => { setTask(initialTask); }, [initialTask]);
 
-  const doneCount = task.executions.filter((e) => e.status === "done").length;
+  const doneCount = task.executions.filter((e) => e.status === "completed").length;
   const totalCount = task.executions.length;
   const execProgress = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
 
@@ -100,7 +101,7 @@ export default function TaskDetailPanel({ task: initialTask, onClose, onTaskUpda
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
     { id: "overview", label: "Overview", icon: <FileText size={13} /> },
     { id: "subtasks", label: `Subtasks ${subtasksTotal > 0 ? `(${subtasksDone}/${subtasksTotal})` : ""}`, icon: <ListChecks size={13} /> },
-    { id: "wallets", label: `Wallets (${totalCount})`, icon: <Wallet size={13} /> },
+    { id: "execution", label: `Execution (${totalCount})`, icon: <Wallet size={13} /> },
     { id: "notes", label: "Notes", icon: <FileText size={13} /> },
     { id: "activity", label: "Activity", icon: <Activity size={13} /> },
   ];
@@ -161,7 +162,7 @@ export default function TaskDetailPanel({ task: initialTask, onClose, onTaskUpda
         <div className={styles.body}>
           {activeTab === "overview" && <OverviewTab task={task} subtaskProgress={subtaskProgress} subtasksDone={subtasksDone} subtasksTotal={subtasksTotal} execProgress={execProgress} doneCount={doneCount} totalCount={totalCount} />}
           {activeTab === "subtasks" && <SubtasksTab task={task} onToggle={handleSubtaskToggle} subtasksDone={subtasksDone} subtasksTotal={subtasksTotal} subtaskProgress={subtaskProgress} />}
-          {activeTab === "wallets" && <WalletsTab task={task} doneCount={doneCount} totalCount={totalCount} execProgress={execProgress} />}
+          {activeTab === "execution" && <ExecutionMatrixTab task={task} onTaskUpdate={(updated) => { setTask(updated); onTaskUpdate?.(updated); }} />}
           {activeTab === "notes" && <NotesTab task={task} newNote={newNote} onNewNoteChange={setNewNote} onAddNote={handleAddNote} />}
           {activeTab === "activity" && <ActivityTab task={task} />}
         </div>
@@ -334,79 +335,7 @@ function SubtaskRow({ subtask, onToggle }: { subtask: Subtask; onToggle: (id: st
   );
 }
 
-/* ── Tab: Wallets ────────────────────────────────────────── */
-function WalletsTab({ task, doneCount, totalCount, execProgress }: {
-  task: Task;
-  doneCount: number;
-  totalCount: number;
-  execProgress: number;
-}) {
-  return (
-    <>
-      <div className={styles.progressSummary}>
-        <div className={styles.progressInfo}>
-          <span className={styles.progressLabel}>{doneCount} of {totalCount} wallets completed</span>
-          <div className={styles.progressBar}>
-            <div className={classNames(styles.progressFill, { [styles.progressFillComplete]: execProgress === 100 })} style={{ width: `${execProgress}%` }} />
-          </div>
-        </div>
-        <span className={styles.progressPercent}>{execProgress}%</span>
-      </div>
-      <div className={styles.walletList}>
-        {task.executions.map((exec) => (
-          <WalletExecutionRow key={exec.walletId} exec={exec} task={task} />
-        ))}
-      </div>
-    </>
-  );
-}
 
-function WalletExecutionRow({ exec, task }: { exec: TaskExecution; task: Task }) {
-  return (
-    <div className={classNames(styles.walletItem, {
-      [styles.walletDone]: exec.status === "done",
-      [styles.walletFailed]: exec.status === "failed",
-    })}>
-      <div className={styles.walletInfo}>
-        <span className={styles.walletName}>{exec.walletName}</span>
-        <span className={styles.walletAddress}>{exec.address}</span>
-        <div className={styles.walletMeta}>
-          {exec.completedAt && (
-            <span className={styles.walletMetaItem}>
-              <CalendarClock size={10} /> {formatDate(exec.completedAt)}
-            </span>
-          )}
-          {exec.txHash && (
-            <a
-              href={`#tx-${exec.txHash}`}
-              className={styles.txLink}
-              onClick={(e) => e.preventDefault()}
-            >
-              <Hash size={10} /> {exec.txHash.slice(0, 16)}...
-            </a>
-          )}
-          {exec.actualGasFee && (
-            <span className={styles.walletMetaItem}>
-              <Zap size={10} /> Gas: {exec.actualGasFee} {task.gasCurrency}
-            </span>
-          )}
-          {exec.note && (
-            <span className={styles.walletMetaItem} style={{ color: "var(--amber-11)" }}>
-              {exec.note}
-            </span>
-          )}
-        </div>
-      </div>
-      <span className={classNames(styles.walletStatusBadge, {
-        [styles.walletStatusPending]: exec.status === "pending",
-        [styles.walletStatusDone]: exec.status === "done",
-        [styles.walletStatusFailed]: exec.status === "failed",
-      })}>
-        {exec.status}
-      </span>
-    </div>
-  );
-}
 
 /* ── Tab: Notes ──────────────────────────────────────────── */
 function NotesTab({ task, newNote, onNewNoteChange, onAddNote }: {

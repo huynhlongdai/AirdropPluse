@@ -1,10 +1,13 @@
 import React from "react";
-import { Plus, Search, Wallet, CheckCircle2, Circle } from "lucide-react";
+import {
+  Plus, Search, Wallet, CheckCircle2, XCircle, Clock, TrendingUp,
+  AlertCircle, ChevronDown, ChevronUp,
+} from "lucide-react";
 import classNames from "classnames";
 import type { Route } from "./+types/wallets";
-import { mockMainWallets, mockWallets as flatWallets } from "~/data/wallets";
-import { mockProjects } from "~/data/projects";
-import type { MainWallet, SubWallet, ChainId } from "~/data/wallets";
+import { mockMainWallets } from "~/data/wallets";
+import type { MainWallet, SubWallet } from "~/data/wallets";
+import { useStore } from "~/hooks/use-store";
 import WalletGroup from "~/components/wallets/wallet-group";
 import WalletForm from "~/components/wallets/wallet-form";
 import styles from "./wallets.module.css";
@@ -29,6 +32,7 @@ function genId(prefix: string) {
 }
 
 export default function Wallets() {
+  const { tasks, projects } = useStore();
   const [tab, setTab] = React.useState<ActiveTab>("groups");
   const [search, setSearch] = React.useState("");
   const [filterType, setFilterType] = React.useState<"all" | MainWallet["type"]>("all");
@@ -119,9 +123,6 @@ export default function Wallets() {
     setWallets((prev) => prev.filter((m) => m.id !== id));
   };
 
-  // For matrix tab — use flat list
-  const matrixWallets = flatWallets.slice(0, 5);
-
   return (
     <main className={styles.wallets}>
       <div className={styles.container}>
@@ -172,7 +173,6 @@ export default function Wallets() {
         {/* Groups tab */}
         {tab === "groups" && (
           <>
-            {/* Toolbar */}
             <div className={styles.toolbar}>
               <div className={styles.searchBox}>
                 <Search size={15} className={styles.searchIcon} />
@@ -218,32 +218,7 @@ export default function Wallets() {
 
         {/* Matrix tab */}
         {tab === "matrix" && (
-          <div className={styles.matrixSection}>
-            <h2 className={styles.matrixTitle}>Participation Matrix</h2>
-            <div className={styles.matrix}>
-              <div className={styles.matrixHeader}>
-                <div className={styles.matrixHeaderCell}>Project</div>
-                {matrixWallets.map((w) => (
-                  <div key={w.id} className={styles.matrixHeaderCell}>{w.name}</div>
-                ))}
-              </div>
-              {mockProjects.slice(0, 8).map((project) => (
-                <div key={project.id} className={styles.matrixRow}>
-                  <div className={styles.matrixProjectName}>{project.name}</div>
-                  {matrixWallets.map((wallet) => {
-                    const participated = project.tasks.some((t) => t.walletId === wallet.id && t.completed);
-                    return (
-                      <div key={wallet.id} className={styles.matrixCell}>
-                        {participated
-                          ? <CheckCircle2 className={styles.checkIcon} />
-                          : <Circle className={styles.emptyIcon} />}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
+          <ParticipationMatrix tasks={tasks} projects={projects} allSubWallets={allSubWallets} />
         )}
       </div>
 
@@ -268,5 +243,305 @@ export default function Wallets() {
         />
       )}
     </main>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// Participation Matrix Component
+// ──────────────────────────────────────────────────────────────
+
+import type { Task } from "~/data/tasks";
+import type { Project } from "~/data/projects";
+
+interface ParticipationMatrixProps {
+  tasks: Task[];
+  projects: Project[];
+  allSubWallets: SubWallet[];
+}
+
+function ParticipationMatrix({ tasks, projects, allSubWallets }: ParticipationMatrixProps) {
+  const [selectedProject, setSelectedProject] = React.useState<string>("all");
+  const [selectedWalletId, setSelectedWalletId] = React.useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = React.useState<"all" | "not-started" | "completed" | "failed">("all");
+
+  // All wallets that appear in any task execution
+  const involvedWalletIds = React.useMemo(() => {
+    const ids = new Set<string>();
+    tasks.forEach((t) => t.executions.forEach((e) => ids.add(e.walletId)));
+    return ids;
+  }, [tasks]);
+
+  const matrixWallets = React.useMemo(() => {
+    const used = allSubWallets.filter((w) => involvedWalletIds.has(w.id));
+    // Also include wallets from task executions that might not be in allSubWallets
+    const extra: { id: string; name: string; address: string }[] = [];
+    tasks.forEach((t) =>
+      t.executions.forEach((e) => {
+        if (!used.find((w) => w.id === e.walletId)) {
+          if (!extra.find((x) => x.id === e.walletId)) {
+            extra.push({ id: e.walletId, name: e.walletName, address: e.address });
+          }
+        }
+      })
+    );
+    return [...used, ...extra];
+  }, [allSubWallets, involvedWalletIds, tasks]);
+
+  // Tasks filtered by project
+  const filteredTasks = React.useMemo(() => {
+    let ts = selectedProject === "all" ? tasks : tasks.filter((t) => t.projectId === selectedProject);
+    return ts;
+  }, [tasks, selectedProject]);
+
+  // Get status for a wallet on a specific task
+  function getWalletStatus(task: Task, walletId: string) {
+    const exec = task.executions.find((e) => e.walletId === walletId);
+    return exec?.status ?? null;
+  }
+
+  // Per-wallet summary across filtered tasks
+  function getWalletSummary(walletId: string) {
+    const involved = filteredTasks.filter((t) => t.executions.some((e) => e.walletId === walletId));
+    const completed = involved.filter((t) => {
+      const exec = t.executions.find((e) => e.walletId === walletId);
+      return exec?.status === "completed";
+    });
+    const failed = involved.filter((t) => {
+      const exec = t.executions.find((e) => e.walletId === walletId);
+      return exec?.status === "failed";
+    });
+    return { total: involved.length, completed: completed.length, failed: failed.length };
+  }
+
+  // Health check — wallets with failed or overdue tasks
+  const healthIssues = React.useMemo(() => {
+    return matrixWallets
+      .map((w) => {
+        const failedTasks = filteredTasks.filter((t) =>
+          t.executions.some((e) => e.walletId === w.id && e.status === "failed")
+        );
+        const overdueTasks = filteredTasks.filter((t) =>
+          t.isOverdue && t.executions.some((e) => e.walletId === w.id && e.status !== "completed")
+        );
+        return { wallet: w, failedCount: failedTasks.length, overdueCount: overdueTasks.length };
+      })
+      .filter((x) => x.failedCount > 0 || x.overdueCount > 0);
+  }, [matrixWallets, filteredTasks]);
+
+  // Wallets visible in matrix (filtered by status if needed)
+  const visibleWallets = React.useMemo(() => {
+    if (filterStatus === "all") return matrixWallets;
+    return matrixWallets.filter((w) => {
+      const summary = getWalletSummary(w.id);
+      if (filterStatus === "not-started") return summary.completed === 0;
+      if (filterStatus === "completed") return summary.total > 0 && summary.completed === summary.total;
+      if (filterStatus === "failed") return summary.failed > 0;
+      return true;
+    });
+  }, [matrixWallets, filterStatus, filteredTasks]);
+
+  const STATUS_CELL: Record<string, React.ReactNode> = {
+    "completed": <CheckCircle2 size={16} color="var(--color-success-9)" />,
+    "in-progress": <TrendingUp size={16} color="var(--color-accent-9)" />,
+    "not-started": <Clock size={16} color="var(--color-neutral-7)" />,
+    "failed": <XCircle size={16} color="var(--color-error-9)" />,
+  };
+
+  return (
+    <div className={styles.matrixSection}>
+      {/* Controls */}
+      <div className={styles.matrixControls}>
+        <div className={styles.matrixControlGroup}>
+          <label className={styles.matrixLabel}>Project</label>
+          <select
+            className={styles.filterSelect}
+            value={selectedProject}
+            onChange={(e) => setSelectedProject(e.target.value)}
+          >
+            <option value="all">All Projects</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.matrixControlGroup}>
+          <label className={styles.matrixLabel}>Filter Wallets</label>
+          <select
+            className={styles.filterSelect}
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)}
+          >
+            <option value="all">All Wallets</option>
+            <option value="not-started">Not started yet</option>
+            <option value="completed">100% Completed</option>
+            <option value="failed">Has failures</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Health check banner */}
+      {healthIssues.length > 0 && (
+        <div className={styles.healthBanner}>
+          <AlertCircle size={16} />
+          <div>
+            <strong>Health Alert:</strong>{" "}
+            {healthIssues.map((issue, i) => (
+              <span key={issue.wallet.id}>
+                <strong>{issue.wallet.name}</strong>
+                {issue.failedCount > 0 && ` — ${issue.failedCount} failed task(s)`}
+                {issue.overdueCount > 0 && ` — ${issue.overdueCount} overdue task(s)`}
+                {i < healthIssues.length - 1 ? "; " : ""}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Legend */}
+      <div className={styles.matrixLegend}>
+        <span className={styles.legendItem}><CheckCircle2 size={13} color="var(--color-success-9)" /> Completed</span>
+        <span className={styles.legendItem}><TrendingUp size={13} color="var(--color-accent-9)" /> In Progress</span>
+        <span className={styles.legendItem}><Clock size={13} color="var(--color-neutral-7)" /> Not Started</span>
+        <span className={styles.legendItem}><XCircle size={13} color="var(--color-error-9)" /> Failed</span>
+      </div>
+
+      {filteredTasks.length === 0 || visibleWallets.length === 0 ? (
+        <div className={styles.emptyState}>
+          <Wallet size={40} className={styles.emptyIcon} />
+          <p>No data to display. Try changing the project or filter.</p>
+        </div>
+      ) : (
+        <div className={styles.matrixWrapper}>
+          <div
+            className={styles.matrix}
+            style={{ gridTemplateColumns: `220px repeat(${filteredTasks.length}, minmax(80px, 1fr))` }}
+          >
+            {/* Header row */}
+            <div className={styles.matrixCornerCell} />
+            {filteredTasks.map((task) => (
+              <div key={task.id} className={styles.matrixTaskHeader} title={task.title}>
+                <span className={styles.matrixTaskTitle}>{task.title}</span>
+                {task.projectName && (
+                  <span className={styles.matrixTaskProject}>{task.projectName}</span>
+                )}
+              </div>
+            ))}
+
+            {/* Wallet rows */}
+            {visibleWallets.map((wallet) => {
+              const summary = getWalletSummary(wallet.id);
+              const pct = summary.total > 0 ? Math.round((summary.completed / summary.total) * 100) : 0;
+              const isExpanded = selectedWalletId === wallet.id;
+
+              return (
+                <React.Fragment key={wallet.id}>
+                  {/* Wallet label cell */}
+                  <div
+                    className={classNames(styles.matrixWalletCell, {
+                      [styles.matrixWalletCellExpanded]: isExpanded,
+                    })}
+                    onClick={() => setSelectedWalletId(isExpanded ? null : wallet.id)}
+                  >
+                    <div className={styles.walletCellContent}>
+                      <div>
+                        <div className={styles.matrixWalletName}>{wallet.name}</div>
+                        <div className={styles.matrixWalletAddress}>{wallet.address}</div>
+                      </div>
+                      <div className={styles.walletCellMeta}>
+                        <span className={classNames(styles.walletPctBadge, {
+                          [styles.walletPctGood]: pct === 100,
+                          [styles.walletPctMid]: pct > 0 && pct < 100,
+                          [styles.walletPctNone]: pct === 0,
+                        })}>
+                          {summary.completed}/{summary.total}
+                        </span>
+                        {summary.failed > 0 && (
+                          <span className={styles.walletFailBadge}>{summary.failed} ✗</span>
+                        )}
+                        {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                      </div>
+                    </div>
+                    <div className={styles.walletMiniProgress}>
+                      <div className={styles.walletMiniProgressFill} style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+
+                  {/* Status cells */}
+                  {filteredTasks.map((task) => {
+                    const status = getWalletStatus(task, wallet.id);
+                    const exec = task.executions.find((e) => e.walletId === wallet.id);
+                    return (
+                      <div
+                        key={task.id}
+                        className={classNames(styles.matrixStatusCell, {
+                          [styles.cellCompleted]: status === "completed",
+                          [styles.cellInProgress]: status === "in-progress",
+                          [styles.cellFailed]: status === "failed",
+                          [styles.cellNotAssigned]: status === null,
+                        })}
+                        title={
+                          status
+                            ? `${wallet.name} — ${status}${exec?.txHash ? `\nTx: ${exec.txHash}` : ""}${exec?.note ? `\nNote: ${exec.note}` : ""}`
+                            : `${wallet.name} — not assigned`
+                        }
+                      >
+                        {status ? STATUS_CELL[status] : <span className={styles.notAssigned}>—</span>}
+                      </div>
+                    );
+                  })}
+
+                  {/* Expanded wallet detail row */}
+                  {isExpanded && (
+                    <>
+                      <div className={styles.walletDetailCell}>
+                        <div className={styles.walletDetailContent}>
+                          <div className={styles.walletDetailStat}>
+                            <CheckCircle2 size={12} color="var(--color-success-9)" />
+                            {summary.completed} done
+                          </div>
+                          {summary.failed > 0 && (
+                            <div className={styles.walletDetailStat} style={{ color: "var(--color-error-11)" }}>
+                              <XCircle size={12} /> {summary.failed} failed
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {filteredTasks.map((task) => {
+                        const exec = task.executions.find((e) => e.walletId === wallet.id);
+                        return (
+                          <div key={`detail-${task.id}`} className={styles.walletDetailTaskCell}>
+                            {exec ? (
+                              <div className={styles.execDetail}>
+                                {exec.txHash && (
+                                  <span className={styles.execDetailTx} title={exec.txHash}>
+                                    #{exec.txHash.slice(2, 8)}
+                                  </span>
+                                )}
+                                {exec.actualGasFee && (
+                                  <span className={styles.execDetailGas}>
+                                    {exec.actualGasFee}
+                                  </span>
+                                )}
+                                {exec.note && (
+                                  <span className={styles.execDetailNote} title={exec.note}>
+                                    💬
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className={styles.notAssigned}>—</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

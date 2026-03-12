@@ -959,7 +959,33 @@
   color: var(--color-accent-11);
 }
 
+.walletPctFull {
+  color: var(--color-success-11);
+}
+
+.taskStatusRow {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.taskStatusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .walletProgress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-size: var(--font-size-0);
+  color: var(--color-neutral-10);
+}
+
+.walletProgressLegacy {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);

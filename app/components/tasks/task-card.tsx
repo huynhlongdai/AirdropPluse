@@ -39,7 +39,7 @@ function formatDeadline(dateStr: string) {
 }
 
 export default function TaskCard({ task, className, onClick, onEdit, onDelete }: TaskCardProps) {
-  const doneCount = task.executions.filter((e) => e.status === "done").length;
+  const doneCount = task.executions.filter((e) => e.status === "completed").length;
   const totalCount = task.executions.length;
   const progress = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
   const isComplete = task.status === "completed";
@@ -100,7 +100,7 @@ export default function TaskCard({ task, className, onClick, onEdit, onDelete }:
             <span
               key={exec.walletId}
               className={classNames(styles.walletPill, {
-                [styles.walletPillDone]: exec.status === "done",
+                [styles.walletPillDone]: exec.status === "completed",
                 [styles.walletPillFailed]: exec.status === "failed",
               })}
             >

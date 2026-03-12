@@ -3,6 +3,9 @@ export type TaskPriority = "high" | "medium" | "low";
 export type TaskStatus = "backlog" | "in-progress" | "review" | "completed";
 export type RecurringCycle = "daily" | "weekly" | "monthly" | null;
 
+/** Granular per-wallet execution status */
+export type WalletTaskStatus = "not-started" | "in-progress" | "completed" | "failed";
+
 export interface Subtask {
   id: string;
   title: string;
@@ -27,7 +30,8 @@ export interface TaskExecution {
   walletId: string;
   walletName: string;
   address: string;
-  status: "pending" | "done" | "failed";
+  /** Granular 4-state status */
+  status: WalletTaskStatus;
   completedAt?: string;
   txHash?: string;
   actualGasFee?: string;
@@ -76,6 +80,13 @@ export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
   completed: "Completed",
 };
 
+export const WALLET_TASK_STATUS_LABELS: Record<WalletTaskStatus, string> = {
+  "not-started": "Not Started",
+  "in-progress": "In Progress",
+  "completed": "Completed",
+  "failed": "Failed",
+};
+
 export const mockTasks: Task[] = [
   // --- zkSync Era ---
   {
@@ -95,8 +106,8 @@ export const mockTasks: Task[] = [
     createdAt: "2024-01-10",
     guideUrl: "https://bridge.zksync.io/",
     executions: [
-      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "done", completedAt: "2024-01-15", txHash: "0xabc123...001", actualGasFee: "0.0048" },
-      { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "done", completedAt: "2024-01-16", txHash: "0xabc123...002", actualGasFee: "0.0051" },
+      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "completed", completedAt: "2024-01-15", txHash: "0xabc123...001", actualGasFee: "0.0048" },
+      { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "completed", completedAt: "2024-01-16", txHash: "0xabc123...002", actualGasFee: "0.0051" },
     ],
     linkedIdentityIds: ["id1"],
     tags: ["bridge", "zksync", "mainnet"],
@@ -111,8 +122,8 @@ export const mockTasks: Task[] = [
     ],
     activityLog: [
       { id: "al-1-1", type: "status-change", message: "Status changed from Backlog → In Progress", timestamp: "2024-01-14" },
-      { id: "al-1-2", type: "wallet-update", message: "zkSync Farmer marked as Done (tx: 0xabc...001)", timestamp: "2024-01-15" },
-      { id: "al-1-3", type: "wallet-update", message: "Base Interactor marked as Done (tx: 0xabc...002)", timestamp: "2024-01-16" },
+      { id: "al-1-2", type: "wallet-update", message: "zkSync Farmer marked as Completed (tx: 0xabc...001)", timestamp: "2024-01-15" },
+      { id: "al-1-3", type: "wallet-update", message: "Base Interactor marked as Completed (tx: 0xabc...002)", timestamp: "2024-01-16" },
       { id: "al-1-4", type: "status-change", message: "Status changed from In Progress → Completed", timestamp: "2024-01-16" },
     ],
   },
@@ -133,8 +144,9 @@ export const mockTasks: Task[] = [
     createdAt: "2024-01-12",
     guideUrl: "https://syncswap.xyz/",
     executions: [
-      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "done", completedAt: "2024-01-20", txHash: "0xdef456...003", actualGasFee: "0.0029" },
-      { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "pending" },
+      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "completed", completedAt: "2024-01-20", txHash: "0xdef456...003", actualGasFee: "0.0029" },
+      { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "not-started" },
+      { walletId: "sub-1c", walletName: "Arb DeFi Bot", address: "0x0987...4321", status: "in-progress", note: "Partially done, 3/5 swaps complete" },
     ],
     linkedIdentityIds: [],
     tags: ["swap", "dex", "zksync"],
@@ -147,7 +159,7 @@ export const mockTasks: Task[] = [
     notes: [],
     activityLog: [
       { id: "al-2-1", type: "status-change", message: "Status changed from Backlog → In Progress", timestamp: "2024-01-20" },
-      { id: "al-2-2", type: "wallet-update", message: "zkSync Farmer marked as Done (tx: 0xdef...003)", timestamp: "2024-01-20" },
+      { id: "al-2-2", type: "wallet-update", message: "zkSync Farmer marked as Completed (tx: 0xdef...003)", timestamp: "2024-01-20" },
     ],
   },
   {
@@ -167,7 +179,8 @@ export const mockTasks: Task[] = [
     createdAt: "2024-01-12",
     guideUrl: "https://app.mute.io/",
     executions: [
-      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "pending" },
+      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "not-started" },
+      { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "failed", note: "Insufficient ETH balance" },
     ],
     tags: ["liquidity", "defi", "zksync"],
     isOverdue: true,
@@ -197,7 +210,8 @@ export const mockTasks: Task[] = [
     createdAt: "2024-01-05",
     guideUrl: "https://stargate.finance/",
     executions: [
-      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "done", completedAt: "2024-01-20", txHash: "0xghi789...004", actualGasFee: "0.011" },
+      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "completed", completedAt: "2024-01-20", txHash: "0xghi789...004", actualGasFee: "0.011" },
+      { walletId: "sub-2a", walletName: "BSC Runner", address: "0xAbCd...7890", status: "completed", completedAt: "2024-01-22", txHash: "0xghi789...005", actualGasFee: "0.013" },
     ],
     linkedIdentityIds: ["id1"],
     tags: ["bridge", "layerzero", "cross-chain"],
@@ -228,7 +242,8 @@ export const mockTasks: Task[] = [
     deadline: "2024-03-01",
     createdAt: "2024-01-05",
     executions: [
-      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "done", completedAt: "2024-01-28" },
+      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "completed", completedAt: "2024-01-28" },
+      { walletId: "sub-2a", walletName: "BSC Runner", address: "0xAbCd...7890", status: "in-progress", note: "3/5 chains done" },
     ],
     tags: ["bridge", "cross-chain", "layerzero"],
     subtasks: [
@@ -257,7 +272,8 @@ export const mockTasks: Task[] = [
     createdAt: "2024-01-17",
     guideUrl: "https://twitter.com/arbitrum",
     executions: [
-      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "done", completedAt: "2024-01-18" },
+      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "completed", completedAt: "2024-01-18" },
+      { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "completed", completedAt: "2024-01-18" },
     ],
     linkedIdentityIds: ["id1", "id2"],
     tags: ["twitter", "social", "arbitrum"],
@@ -284,7 +300,7 @@ export const mockTasks: Task[] = [
     createdAt: "2024-01-17",
     guideUrl: "https://discord.gg/arbitrum",
     executions: [
-      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "done", completedAt: "2024-01-18" },
+      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "completed", completedAt: "2024-01-18" },
     ],
     linkedIdentityIds: ["id2"],
     tags: ["discord", "social", "arbitrum"],
@@ -310,8 +326,9 @@ export const mockTasks: Task[] = [
     createdAt: "2024-01-17",
     guideUrl: "https://galxe.com/arbitrum",
     executions: [
-      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "pending" },
-      { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "pending" },
+      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "not-started" },
+      { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "not-started" },
+      { walletId: "sub-2a", walletName: "BSC Runner", address: "0xAbCd...7890", status: "in-progress", note: "Got captcha on Q3" },
     ],
     linkedIdentityIds: ["id1"],
     tags: ["galxe", "quiz", "arbitrum"],
@@ -342,9 +359,9 @@ export const mockTasks: Task[] = [
     chainId: "zksync",
     createdAt: "2024-01-10",
     executions: [
-      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "done", completedAt: "2024-03-12" },
-      { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "pending" },
-      { walletId: "sub-3a", walletName: "Solana Airdrop Hunter", address: "GKot5...Xkq", status: "pending" },
+      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "completed", completedAt: "2024-03-12" },
+      { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "not-started" },
+      { walletId: "sub-3a", walletName: "Solana Airdrop Hunter", address: "GKot5...Xkq", status: "not-started" },
     ],
     isDailyReset: true,
     tags: ["daily", "checkin", "zksync"],
@@ -354,7 +371,7 @@ export const mockTasks: Task[] = [
     ],
     notes: [],
     activityLog: [
-      { id: "al-9-1", type: "subtask-completed", message: "Daily reset at 00:00 UTC — all wallets reset to pending", timestamp: "2024-03-12" },
+      { id: "al-9-1", type: "subtask-completed", message: "Daily reset at 00:00 UTC — all wallets reset to not-started", timestamp: "2024-03-12" },
     ],
   },
   {
@@ -372,8 +389,8 @@ export const mockTasks: Task[] = [
     gasCurrency: "ETH",
     createdAt: "2024-01-08",
     executions: [
-      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "pending" },
-      { walletId: "sub-2a", walletName: "BSC Runner", address: "0xAbCd...7890", status: "pending" },
+      { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "not-started" },
+      { walletId: "sub-2a", walletName: "BSC Runner", address: "0xAbCd...7890", status: "not-started" },
     ],
     isDailyReset: true,
     tags: ["daily", "starknet", "xp"],
@@ -401,7 +418,7 @@ export const mockTasks: Task[] = [
     createdAt: "2024-01-14",
     guideUrl: "https://app.uniswap.org/",
     executions: [
-      { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "done", completedAt: "2024-01-19", txHash: "0xjkl012...010", actualGasFee: "0.0019" },
+      { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "completed", completedAt: "2024-01-19", txHash: "0xjkl012...010", actualGasFee: "0.0019" },
     ],
     linkedIdentityIds: ["id2"],
     tags: ["swap", "base", "uniswap", "mainnet"],
@@ -432,7 +449,7 @@ export const mockTasks: Task[] = [
     createdAt: "2024-01-22",
     guideUrl: "https://sui.io/ecosystem",
     executions: [
-      { walletId: "sub-3a", walletName: "Solana Airdrop Hunter", address: "GKot5...Xkq", status: "pending" },
+      { walletId: "sub-3a", walletName: "Solana Airdrop Hunter", address: "GKot5...Xkq", status: "not-started" },
     ],
     tags: ["weekly", "sui", "protocol"],
     subtasks: [
