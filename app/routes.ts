@@ -8,5 +8,6 @@ export default [
   route("projects", "routes/projects.tsx"),
   route("wallets", "routes/wallets.tsx"),
   route("tasks", "routes/tasks.tsx"),
+  route("identities", "routes/identities.tsx"),
   ...devRoutes,
 ] satisfies RouteConfig;

@@ -9,12 +9,14 @@ import {
   Wallet,
   ListTodo,
   Activity,
+  Users,
 } from "lucide-react";
 import type { Route } from "./+types/home";
 import { ProjectCard } from "~/components/project-card";
 import { mockProjects } from "~/data/projects";
 import { mockInboxItems } from "~/data/inbox";
 import { mockWallets } from "~/data/wallets";
+import { mockIdentities } from "~/data/identities";
 import styles from "./home.module.css";
 
 export function meta({}: Route.MetaArgs) {
@@ -47,6 +49,7 @@ export default function Home() {
     .slice(0, 5);
 
   const activeWallets = mockWallets.filter((w) => w.isActive);
+  const activeIdentities = mockIdentities.filter((i) => i.status === "active");
 
   return (
     <main className={styles.home}>
@@ -177,6 +180,44 @@ export default function Home() {
           <div className={styles.projectsGrid}>
             {highPriorityProjects.slice(0, 3).map((project) => (
               <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>
+              <Users className={styles.sectionIcon} />
+              Active Identities
+            </h2>
+            <Link to="/identities" className={styles.viewAllLink}>
+              Manage Identities
+              <ArrowRight style={{ width: "16px", height: "16px" }} />
+            </Link>
+          </div>
+          <div className={styles.walletGrid}>
+            {activeIdentities.slice(0, 4).map((identity) => (
+              <div key={identity.id} className={styles.walletCard}>
+                <div className={styles.walletHeader}>
+                  <span className={styles.walletName}>{identity.alias}</span>
+                  <span className={styles.walletGroup}>{identity.status}</span>
+                </div>
+                <div className={styles.walletAddress}>
+                  {identity.email?.address ?? "No email"}
+                </div>
+                <div className={styles.walletStats}>
+                  <div className={styles.walletStat}>
+                    <div className={styles.walletStatValue}>{identity.linkedWallets.length}</div>
+                    <div className={styles.walletStatLabel}>Wallets</div>
+                  </div>
+                  <div className={styles.walletStat}>
+                    <div className={styles.walletStatValue}>
+                      {[identity.twitter, identity.discord, identity.telegram, identity.tiktok].filter(Boolean).length}
+                    </div>
+                    <div className={styles.walletStatLabel}>Platforms</div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </section>
