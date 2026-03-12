@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { ColorSchemeToggle } from "~/components/ui/color-scheme-toggle/color-scheme-toggle";
 import { useStore } from "~/hooks/use-store";
-import { useState } from "react";
+import { useRealtime } from "~/hooks/use-realtime";
+import { useState, useCallback } from "react";
 import styles from "./app-layout.module.css";
 
 const NAV_GROUPS = [
@@ -43,8 +44,14 @@ const NAV_GROUPS = [
 ];
 
 export default function AppLayout() {
-  const { inboxItems } = useStore();
+  const { inboxItems, refresh } = useStore();
   const [collapsed, setCollapsed] = useState(false);
+
+  // Realtime: refresh store data when Supabase pushes changes
+  const onInboxChange = useCallback(() => refresh(), [refresh]);
+  const onTasksChange = useCallback(() => refresh(), [refresh]);
+  const onProjectsChange = useCallback(() => refresh(), [refresh]);
+  useRealtime({ onInboxChange, onTasksChange, onProjectsChange });
 
   const pendingCount = inboxItems.filter((item) => item.status === "review").length;
 

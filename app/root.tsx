@@ -1,10 +1,22 @@
-import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "react-router";
 
 import type { Route } from "./+types/root";
 import { Toaster } from "./components/ui/toaster/toaster";
 import { Toaster as SonnerToaster } from "./components/ui/sonner/sonner";
 import { StoreProvider } from "./hooks/use-store";
 import colorSchemeApi from "@dazl/color-scheme/client?url";
+import { getProjects } from "./lib/db/projects.server";
+import { getTasks } from "./lib/db/tasks.server";
+import { getInboxItems } from "./lib/db/inbox.server";
+import { getMainWallets } from "./lib/db/wallets.server";
+import type { Project } from "./data/projects";
+import type { Task } from "./data/tasks";
+import type { InboxItem } from "./data/inbox";
+import type { MainWallet } from "./data/wallets";
+import { mockProjects } from "./data/projects";
+import { mockTasks } from "./data/tasks";
+import { mockInboxItems } from "./data/inbox";
+import { mockMainWallets } from "./data/wallets";
 
 import "./styles/reset.css";
 import "./styles/global.css";
@@ -37,6 +49,26 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+/** Load initial data server-side — fallback to mock data on error */
+export async function loader(_: Route.LoaderArgs) {
+  try {
+    const [projects, tasks, inboxItems, wallets] = await Promise.all([
+      getProjects(),
+      getTasks(),
+      getInboxItems(),
+      getMainWallets(),
+    ]);
+    return { projects, tasks, inboxItems, wallets };
+  } catch {
+    return {
+      projects: mockProjects as Project[],
+      tasks: mockTasks as Task[],
+      inboxItems: mockInboxItems as InboxItem[],
+      wallets: mockMainWallets as MainWallet[],
+    };
+  }
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   const { rootCssClass, resolvedScheme } = useColorScheme();
   return (
@@ -49,9 +81,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <StoreProvider>
-          {children}
-        </StoreProvider>
+        {children}
         <Toaster />
         <SonnerToaster richColors position="top-right" />
         <ScrollRestoration />
@@ -62,7 +92,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const { projects, tasks, inboxItems, wallets } = useLoaderData<typeof loader>();
+
+  return (
+    <StoreProvider
+      initialProjects={projects}
+      initialTasks={tasks}
+      initialInboxItems={inboxItems}
+      initialWallets={wallets}
+    >
+      <Outlet />
+    </StoreProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

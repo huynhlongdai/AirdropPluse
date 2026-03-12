@@ -13,5 +13,14 @@ export default [
     route("identities", "routes/identities.tsx"),
     route("settings", "routes/settings.tsx"),
   ]),
+  // API resource routes
+  route("api/config", "routes/api.config.ts"),
+  route("api/projects", "routes/api.projects.ts"),
+  route("api/projects/:id", "routes/api.projects.$id.ts"),
+  route("api/projects/:id/wallets", "routes/api.projects.$id.wallets.ts"),
+  route("api/tasks", "routes/api.tasks.ts"),
+  route("api/tasks/:id", "routes/api.tasks.$id.ts"),
+  route("api/inbox", "routes/api.inbox.ts"),
+  route("api/inbox/:id", "routes/api.inbox.$id.ts"),
   ...devRoutes,
 ] satisfies RouteConfig;
