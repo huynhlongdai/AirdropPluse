@@ -1,79 +1,246 @@
+/* ─── Layout ─────────────────────────────────────────────── */
 .layout {
   display: flex;
   min-height: 100vh;
   background: var(--color-neutral-1);
+  --sidebar-width: 228px;
+  --sidebar-collapsed-width: 60px;
+  transition: grid-template-columns 0.25s var(--ease-out);
 }
 
+.layoutCollapsed {
+  --sidebar-width: var(--sidebar-collapsed-width);
+}
+
+/* ─── Sidebar ─────────────────────────────────────────────── */
 .sidebar {
-  width: 220px;
+  width: var(--sidebar-width);
   flex-shrink: 0;
   background: var(--color-neutral-2);
-  border-right: 1px solid var(--color-neutral-6);
+  border-right: 1px solid var(--color-neutral-5);
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden;
+  transition: width 0.25s var(--ease-out);
 }
 
+.sidebarCollapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+/* ─── Brand ───────────────────────────────────────────────── */
 .brand {
-  padding: var(--space-4) var(--space-4) var(--space-3);
-  border-bottom: 1px solid var(--color-neutral-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--color-neutral-5);
+  min-height: 64px;
+  overflow: hidden;
+}
+
+.brandIcon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--color-accent-9), var(--color-accent-11));
+  border-radius: var(--radius-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-accent-9) 40%, transparent);
+}
+
+.brandZap {
+  width: 18px;
+  height: 18px;
+  color: #fff;
+  fill: #fff;
+}
+
+.brandText {
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .brandName {
-  font-size: var(--font-size-1);
+  font-size: var(--font-size-0);
   font-weight: 700;
-  color: var(--color-accent-11);
+  color: var(--color-neutral-12);
   letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .brandTagline {
-  font-size: var(--font-size-00);
-  color: var(--color-neutral-10);
-  margin-top: var(--space-1);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-accent-10);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
+/* ─── Collapse Button ─────────────────────────────────────── */
+.collapseBtn {
+  position: absolute;
+  top: 52px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background: var(--color-neutral-2);
+  border: 1px solid var(--color-neutral-5);
+  border-radius: var(--radius-round);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  box-shadow: var(--shadow-1);
+}
+
+.collapseBtn:hover {
+  background: var(--color-accent-3);
+  border-color: var(--color-accent-6);
+}
+
+.collapseBtnIcon {
+  width: 12px;
+  height: 12px;
+  color: var(--color-neutral-10);
+}
+
+.collapseBtn:hover .collapseBtnIcon {
+  color: var(--color-accent-11);
+}
+
+/* ─── Navigation ──────────────────────────────────────────── */
 .nav {
   flex: 1;
   padding: var(--space-3) var(--space-2);
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
 }
 
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Nav Group ───────────────────────────────────────────── */
+.navGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: var(--space-2);
+}
+
+.navGroup + .navGroup {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-neutral-4);
+}
+
+.navGroupLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-neutral-8);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0 var(--space-2) var(--space-1);
+  white-space: nowrap;
+}
+
+/* ─── Nav Link ────────────────────────────────────────────── */
 .navLink {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
+  padding: 7px var(--space-2);
   border-radius: var(--radius-2);
-  color: var(--color-neutral-11);
+  color: var(--color-neutral-10);
   text-decoration: none;
   font-size: var(--font-size-0);
   font-weight: 500;
   transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+}
+
+.navLink::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  height: 60%;
+  width: 3px;
+  border-radius: 0 var(--radius-round) var(--radius-round) 0;
+  background: var(--color-accent-9);
+  opacity: 0;
+  transform: scaleY(0);
+  transition: opacity 0.15s, transform 0.15s var(--ease-spring-3);
 }
 
 .navLink:hover {
-  background: var(--color-neutral-4);
+  background: var(--color-neutral-3);
   color: var(--color-neutral-12);
 }
 
 .navLink.active {
   background: var(--color-accent-3);
   color: var(--color-accent-11);
+  font-weight: 600;
+}
+
+.navLink.active::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+/* ─── Nav Icon ────────────────────────────────────────────── */
+.navIconWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 .navIcon {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
+  transition: color 0.15s;
 }
 
+.navLink.active .navIcon {
+  color: var(--color-accent-10);
+}
+
+.navDot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 7px;
+  height: 7px;
+  background: var(--color-error-9);
+  border-radius: var(--radius-round);
+  border: 1px solid var(--color-neutral-2);
+}
+
+/* ─── Nav Label & Badge ───────────────────────────────────── */
 .navLabel {
   flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .navBadge {
@@ -82,7 +249,7 @@
   justify-content: center;
   min-width: 18px;
   height: 18px;
-  padding: 0 var(--space-1);
+  padding: 0 5px;
   background: var(--color-error-9);
   color: var(--color-error-contrast);
   border-radius: var(--radius-round);
@@ -92,21 +259,53 @@
   flex-shrink: 0;
 }
 
+/* ─── Footer ──────────────────────────────────────────────── */
 .sidebarFooter {
   padding: var(--space-3) var(--space-2);
-  border-top: 1px solid var(--color-neutral-6);
+  border-top: 1px solid var(--color-neutral-5);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 52px;
+  overflow: hidden;
 }
 
-.footerLabel {
+.footerNotif {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  border-radius: var(--radius-2);
+  padding: var(--space-1) var(--space-2);
+  transition: background 0.15s;
+  flex: 1;
+  overflow: hidden;
+}
+
+.footerNotif:hover {
+  background: var(--color-neutral-3);
+}
+
+.footerNotifIcon {
+  width: 15px;
+  height: 15px;
+  color: var(--color-neutral-9);
+  flex-shrink: 0;
+}
+
+.footerNotifLabel {
   font-size: var(--font-size-00);
   color: var(--color-neutral-9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* ─── Main Content ────────────────────────────────────────── */
 .main {
   flex: 1;
   min-width: 0;
   overflow-y: auto;
+  transition: margin-left 0.25s var(--ease-out);
 }
