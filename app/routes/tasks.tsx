@@ -1,236 +1,213 @@
 import React from "react";
-import { Calendar as CalendarIcon, Clock, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { List, LayoutGrid, CalendarDays, AlertCircle, Zap, CheckCircle2, RefreshCw, Clock } from "lucide-react";
 import classNames from "classnames";
 import type { Route } from "./+types/tasks";
-import { mockProjects } from "~/data/projects";
+import { mockTasks } from "~/data/tasks";
+import type { Task } from "~/data/tasks";
+import TaskListView from "~/components/tasks/task-list-view";
+import TaskBoardView from "~/components/tasks/task-board-view";
+import TaskCalendarView from "~/components/tasks/task-calendar-view";
 import styles from "./tasks.module.css";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Task & Calendar View - AirdropPulse" },
-    {
-      name: "description",
-      content: "Manage your airdrop tasks and deadlines",
-    },
+    { title: "Tasks - AirdropPulse" },
+    { name: "description", content: "Manage and track all airdrop tasks across projects and wallets" },
   ];
 }
 
+type ViewMode = "list" | "board" | "calendar";
+
 export default function Tasks() {
-  const [view, setView] = React.useState<"timeline" | "calendar">("timeline");
-  const [currentDate] = React.useState(new Date());
+  const [view, setView] = React.useState<ViewMode>("board");
+  const [filterType, setFilterType] = React.useState("all");
+  const [filterStatus, setFilterStatus] = React.useState("all");
+  const [filterProject, setFilterProject] = React.useState("all");
+  const [filterPriority, setFilterPriority] = React.useState("all");
+  const [todayFocus, setTodayFocus] = React.useState(false);
+  const [search, setSearch] = React.useState("");
 
-  const upcomingEvents = mockProjects
-    .filter((p) => p.snapshotDate || p.claimDate || p.expiryDate)
-    .flatMap((p) => {
-      const events = [];
-      if (p.snapshotDate) {
-        events.push({
-          id: `${p.id}-snapshot`,
-          projectName: p.name,
-          type: "snapshot",
-          date: new Date(p.snapshotDate),
-          urgent: new Date(p.snapshotDate).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000,
-        });
-      }
-      if (p.claimDate) {
-        events.push({
-          id: `${p.id}-claim`,
-          projectName: p.name,
-          type: "claim",
-          date: new Date(p.claimDate),
-          urgent: false,
-        });
-      }
-      if (p.expiryDate) {
-        events.push({
-          id: `${p.id}-expiry`,
-          projectName: p.name,
-          type: "expiry",
-          date: new Date(p.expiryDate),
-          urgent: new Date(p.expiryDate).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000,
-        });
-      }
-      return events;
-    })
-    .sort((a, b) => a.date.getTime() - b.date.getTime());
+  const projects = React.useMemo(() => {
+    const names = mockTasks.map((t) => t.projectName).filter(Boolean) as string[];
+    return [...new Set(names)];
+  }, []);
 
-  const thisWeek = upcomingEvents.filter((e) => {
-    const diff = e.date.getTime() - Date.now();
-    return diff > 0 && diff < 7 * 24 * 60 * 60 * 1000;
-  });
+  const filteredTasks = React.useMemo(() => {
+    let tasks: Task[] = mockTasks;
+    if (search) {
+      const q = search.toLowerCase();
+      tasks = tasks.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          (t.projectName?.toLowerCase().includes(q) ?? false) ||
+          (t.description?.toLowerCase().includes(q) ?? false),
+      );
+    }
+    if (filterType !== "all") tasks = tasks.filter((t) => t.type === filterType);
+    if (filterStatus !== "all") tasks = tasks.filter((t) => t.status === filterStatus);
+    if (filterProject !== "all") tasks = tasks.filter((t) => t.projectName === filterProject);
+    if (filterPriority !== "all") tasks = tasks.filter((t) => t.priority === filterPriority);
+    if (todayFocus) {
+      const now = Date.now();
+      tasks = tasks.filter((t) => {
+        if (t.recurring === "daily") return true;
+        if (!t.deadline) return false;
+        const diff = new Date(t.deadline).getTime() - now;
+        return diff > 0 && diff < 24 * 60 * 60 * 1000;
+      });
+    }
+    return tasks;
+  }, [search, filterType, filterStatus, filterProject, filterPriority, todayFocus]);
 
-  const thisMonth = upcomingEvents.filter((e) => {
-    const diff = e.date.getTime() - Date.now();
-    return diff >= 7 * 24 * 60 * 60 * 1000 && diff < 30 * 24 * 60 * 60 * 1000;
-  });
-
-  const formatEventDate = (date: Date) => {
-    return {
-      day: date.getDate(),
-      month: date.toLocaleDateString("en-US", { month: "short" }),
-    };
-  };
-
-  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
-  const calendarDays = Array.from({ length: 42 }, (_, i) => {
-    const dayNumber = i - firstDayOfMonth + 1;
-    const isCurrentMonth = dayNumber > 0 && dayNumber <= daysInMonth;
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayNumber);
-    const hasEvent = upcomingEvents.some(
-      (e) =>
-        e.date.getDate() === dayNumber &&
-        e.date.getMonth() === currentDate.getMonth() &&
-        e.date.getFullYear() === currentDate.getFullYear(),
-    );
-    const isToday =
-      date.getDate() === new Date().getDate() &&
-      date.getMonth() === new Date().getMonth() &&
-      date.getFullYear() === new Date().getFullYear();
-
-    return {
-      dayNumber: isCurrentMonth ? dayNumber : "",
-      isCurrentMonth,
-      hasEvent,
-      isToday,
-    };
-  });
+  // Stats
+  const total = mockTasks.length;
+  const completed = mockTasks.filter((t) => t.status === "completed").length;
+  const inProgress = mockTasks.filter((t) => t.status === "in-progress").length;
+  const overdue = mockTasks.filter((t) => t.isOverdue).length;
+  const daily = mockTasks.filter((t) => t.recurring === "daily").length;
 
   return (
     <main className={styles.tasks}>
       <div className={styles.container}>
+        {/* Header */}
         <header className={styles.header}>
-          <h1 className={styles.title}>Task & Calendar View</h1>
-          <p className={styles.subtitle}>Temporal management of airdrop activities and deadlines</p>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.title}>Task Manager</h1>
+            <p className={styles.subtitle}>
+              Coordinate missions across all projects, wallets, and identities
+            </p>
+          </div>
         </header>
 
-        <div className={styles.viewToggle}>
-          <button
-            className={classNames(styles.viewButton, { [styles.viewButtonActive]: view === "timeline" })}
-            onClick={() => setView("timeline")}
-          >
-            Timeline View
-          </button>
-          <button
-            className={classNames(styles.viewButton, { [styles.viewButtonActive]: view === "calendar" })}
-            onClick={() => setView("calendar")}
-          >
-            Calendar View
-          </button>
+        {/* Stats bar */}
+        <div className={styles.statsBar}>
+          <div className={styles.statCard}>
+            <span className={styles.statLabel}>Total Tasks</span>
+            <span className={styles.statValue}>{total}</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statLabel}>In Progress</span>
+            <span className={classNames(styles.statValue, styles.statValueAccent)}>{inProgress}</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statLabel}>Completed</span>
+            <span className={classNames(styles.statValue, styles.statValueSuccess)}>{completed}</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statLabel}>Overdue</span>
+            <span className={classNames(styles.statValue, styles.statValueError)}>{overdue}</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statLabel}>Daily Tasks</span>
+            <span className={classNames(styles.statValue, styles.statValueWarning)}>{daily}</span>
+          </div>
         </div>
 
-        {view === "timeline" && (
-          <div className={styles.timeline}>
-            {thisWeek.length > 0 && (
-              <div className={styles.timelineSection}>
-                <div className={styles.sectionHeader}>
-                  <AlertCircle className={styles.sectionIcon} />
-                  <h2 className={styles.sectionTitle}>This Week</h2>
-                  <span className={styles.sectionCount}>{thisWeek.length}</span>
-                </div>
-                <div className={styles.eventsList}>
-                  {thisWeek.map((event) => {
-                    const { day, month } = formatEventDate(event.date);
-                    return (
-                      <div key={event.id} className={styles.event}>
-                        <div className={styles.eventDate}>
-                          <div className={styles.eventDay}>{day}</div>
-                          <div className={styles.eventMonth}>{month}</div>
-                        </div>
-                        <div className={styles.eventContent}>
-                          <h3 className={styles.eventTitle}>{event.projectName}</h3>
-                          <div className={styles.eventMeta}>
-                            <span
-                              className={classNames(styles.eventBadge, {
-                                [styles.urgentBadge]: event.urgent,
-                              })}
-                            >
-                              {event.type}
-                            </span>
-                            {event.urgent && (
-                              <span className={styles.urgentBadge}>
-                                <AlertCircle
-                                  style={{ width: "14px", height: "14px", display: "inline", marginRight: "4px" }}
-                                />
-                                Urgent
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {thisMonth.length > 0 && (
-              <div className={styles.timelineSection}>
-                <div className={styles.sectionHeader}>
-                  <Clock className={styles.sectionIcon} />
-                  <h2 className={styles.sectionTitle}>This Month</h2>
-                  <span className={styles.sectionCount}>{thisMonth.length}</span>
-                </div>
-                <div className={styles.eventsList}>
-                  {thisMonth.map((event) => {
-                    const { day, month } = formatEventDate(event.date);
-                    return (
-                      <div key={event.id} className={styles.event}>
-                        <div className={styles.eventDate}>
-                          <div className={styles.eventDay}>{day}</div>
-                          <div className={styles.eventMonth}>{month}</div>
-                        </div>
-                        <div className={styles.eventContent}>
-                          <h3 className={styles.eventTitle}>{event.projectName}</h3>
-                          <div className={styles.eventMeta}>
-                            <span className={styles.eventBadge}>{event.type}</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+        {/* Toolbar */}
+        <div className={styles.toolbar}>
+          {/* View toggle */}
+          <div className={styles.viewToggle}>
+            <button
+              className={classNames(styles.viewButton, { [styles.viewButtonActive]: view === "list" })}
+              onClick={() => setView("list")}
+              type="button"
+            >
+              <List size={16} /> List
+            </button>
+            <button
+              className={classNames(styles.viewButton, { [styles.viewButtonActive]: view === "board" })}
+              onClick={() => setView("board")}
+              type="button"
+            >
+              <LayoutGrid size={16} /> Board
+            </button>
+            <button
+              className={classNames(styles.viewButton, { [styles.viewButtonActive]: view === "calendar" })}
+              onClick={() => setView("calendar")}
+              type="button"
+            >
+              <CalendarDays size={16} /> Calendar
+            </button>
           </div>
-        )}
 
-        {view === "calendar" && (
-          <div className={styles.calendar}>
-            <div className={styles.calendarHeader}>
-              <h2 className={styles.calendarTitle}>
-                {currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-              </h2>
-              <div className={styles.calendarNav}>
-                <button className={styles.navButton}>
-                  <ChevronLeft style={{ width: "20px", height: "20px" }} />
-                </button>
-                <button className={styles.navButton}>
-                  <ChevronRight style={{ width: "20px", height: "20px" }} />
-                </button>
-              </div>
-            </div>
+          {/* Today focus */}
+          <button
+            className={classNames(styles.todayFocusButton, { [styles.todayFocusActive]: todayFocus })}
+            onClick={() => setTodayFocus((v) => !v)}
+            type="button"
+          >
+            <AlertCircle size={14} />
+            Today&apos;s Focus
+          </button>
 
-            <div className={styles.calendarGrid}>
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div key={day} className={styles.dayHeader}>
-                  {day}
-                </div>
+          {/* Filters */}
+          <div className={styles.filterGroup}>
+            <select
+              className={styles.filterSelect}
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              <option value="all">All Types</option>
+              <option value="onchain">On-chain</option>
+              <option value="social">Social</option>
+              <option value="daily-checkin">Daily Check-in</option>
+              <option value="one-time">One-time</option>
+            </select>
+
+            <select
+              className={styles.filterSelect}
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              <option value="backlog">Backlog</option>
+              <option value="in-progress">In Progress</option>
+              <option value="review">Review</option>
+              <option value="completed">Completed</option>
+            </select>
+
+            <select
+              className={styles.filterSelect}
+              value={filterProject}
+              onChange={(e) => setFilterProject(e.target.value)}
+            >
+              <option value="all">All Projects</option>
+              {projects.map((p) => (
+                <option key={p} value={p}>{p}</option>
               ))}
-              {calendarDays.map((day, index) => (
-                <div
-                  key={index}
-                  className={classNames(styles.day, {
-                    [styles.dayInactive]: !day.isCurrentMonth,
-                    [styles.dayToday]: day.isToday,
-                    [styles.dayHasEvent]: day.hasEvent,
-                  })}
-                >
-                  {day.dayNumber}
-                </div>
-              ))}
-            </div>
+            </select>
+
+            <select
+              className={styles.filterSelect}
+              value={filterPriority}
+              onChange={(e) => setFilterPriority(e.target.value)}
+            >
+              <option value="all">All Priorities</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
           </div>
+
+          {/* Search */}
+          <input
+            className={styles.searchInput}
+            type="text"
+            placeholder="Search tasks..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {/* Content */}
+        {filteredTasks.length === 0 ? (
+          <div className={styles.emptyState}>No tasks match your filters.</div>
+        ) : view === "list" ? (
+          <TaskListView tasks={filteredTasks} />
+        ) : view === "board" ? (
+          <TaskBoardView tasks={filteredTasks} />
+        ) : (
+          <TaskCalendarView tasks={filteredTasks} />
         )}
       </div>
     </main>
