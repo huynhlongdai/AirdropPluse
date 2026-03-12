@@ -7,6 +7,7 @@ export default [
     index("routes/home.tsx"),
     route("inbox", "routes/inbox.tsx"),
     route("projects", "routes/projects.tsx"),
+    route("projects/:id", "routes/project-detail.tsx"),
     route("wallets", "routes/wallets.tsx"),
     route("tasks", "routes/tasks.tsx"),
     route("identities", "routes/identities.tsx"),
