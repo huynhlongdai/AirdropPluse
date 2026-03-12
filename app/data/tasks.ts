@@ -38,10 +38,18 @@ export interface TaskExecution {
   note?: string;
 }
 
+export type GuideSource = "manual" | "ai-extracted";
+
 export interface Task {
   id: string;
   title: string;
   description?: string;
+  /** Rich Markdown guide content */
+  guide?: string;
+  /** Source of guide: manually written or AI-extracted from inbox */
+  guideSource?: GuideSource;
+  /** Human-readable source label e.g. "Telegram @scrollFarm" */
+  guideSourceLabel?: string;
   type: TaskType;
   priority: TaskPriority;
   status: TaskStatus;
@@ -105,6 +113,8 @@ export const mockTasks: Task[] = [
     deadline: "2024-03-15",
     createdAt: "2024-01-10",
     guideUrl: "https://bridge.zksync.io/",
+    guide: "## Bridge ETH to zkSync Era\n\n**Goal:** Establish on-chain presence on zkSync by bridging ETH from Ethereum mainnet.\n\n### Steps\n\n1. Go to [bridge.zksync.io](https://bridge.zksync.io/) and connect your wallet.\n2. Select **Ethereum → zkSync Era** direction.\n3. Enter **at least 0.05 ETH** — this is the minimum recommended amount.\n4. Click **Bridge** and approve the transaction in your wallet (~15 min confirmation).\n5. Verify ETH appears on zkSync using the portfolio tab.\n\n### Tips\n- Bridge during low-traffic hours to save on gas fees.\n- Use the official bridge only — avoid third-party bridges for this step.",
+    guideSource: "manual",
     executions: [
       { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "completed", completedAt: "2024-01-15", txHash: "0xabc123...001", actualGasFee: "0.0048" },
       { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "completed", completedAt: "2024-01-16", txHash: "0xabc123...002", actualGasFee: "0.0051" },
@@ -143,6 +153,8 @@ export const mockTasks: Task[] = [
     deadline: "2024-03-15",
     createdAt: "2024-01-12",
     guideUrl: "https://syncswap.xyz/",
+    guide: "## Swap Tokens on SyncSwap\n\n**Goal:** Perform at least 5 organic-looking token swaps across different pairs.\n\n### Recommended Pairs\n- ETH → USDC\n- ETH → USDT\n- USDC → DAI\n- DAI → USDT\n- USDT → ETH\n\n### Steps\n\n1. Open [syncswap.xyz](https://syncswap.xyz/) and connect your zkSync wallet.\n2. Select a token pair and enter your swap amount (vary amounts each swap).\n3. Confirm the swap — record the **transaction hash** in the execution tab.\n4. Repeat for remaining pairs, spacing out swaps by a few hours if possible.\n5. Minimum **5 swaps** required; 10+ is recommended for maximum score.\n\n> ⚠️ **Note:** Do NOT do all 5 swaps in a single block — it looks like a bot and may trigger Sybil filters.",
+    guideSource: "manual",
     executions: [
       { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "completed", completedAt: "2024-01-20", txHash: "0xdef456...003", actualGasFee: "0.0029" },
       { walletId: "sub-1b", walletName: "Base Interactor", address: "0x1234...7890", status: "not-started" },
@@ -209,6 +221,9 @@ export const mockTasks: Task[] = [
     deadline: "2024-02-01",
     createdAt: "2024-01-05",
     guideUrl: "https://stargate.finance/",
+    guide: "## Bridge via Stargate Finance\n\n**Goal:** Bridge USDC to 3+ different chains using Stargate.\n\n### Target Chains\n1. Arbitrum\n2. Optimism\n3. Polygon\n\n### Steps\n\n1. Go to [stargate.finance](https://stargate.finance/) and connect your wallet.\n2. Select **USDC** as the token to bridge.\n3. Bridge at least **$20 USDC** to **Arbitrum** — save the TX hash.\n4. Repeat step 3 for **Optimism** and **Polygon**.\n5. Confirm USDC arrives on each destination chain.\n\n### Tips\n- Use Stargate V2 for slightly lower fees.\n- Space out bridges by a few minutes for a more organic pattern.",
+    guideSource: "ai-extracted",
+    guideSourceLabel: "Telegram @layerzero_alpha",
     executions: [
       { walletId: "sub-1a", walletName: "zkSync Farmer", address: "0x8Ba1...BA72", status: "completed", completedAt: "2024-01-20", txHash: "0xghi789...004", actualGasFee: "0.011" },
       { walletId: "sub-2a", walletName: "BSC Runner", address: "0xAbCd...7890", status: "completed", completedAt: "2024-01-22", txHash: "0xghi789...005", actualGasFee: "0.013" },

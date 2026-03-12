@@ -36,6 +36,8 @@ export interface ExtractedData {
   isFlash?: boolean; // instant/flash tasks
   flashExpiresAt?: string;
   subtasks?: string[];
+  /** AI-generated step-by-step guide in Markdown format */
+  guideContent?: string;
   // News fields
   newsTitle?: string;
   newsTags?: NewsTag[];
@@ -76,6 +78,7 @@ export const mockInboxItems: InboxItem[] = [
       steps: ["Bridge ETH to Scroll", "Go to genesis-nft page", "Connect wallet", "Click Mint"],
       gasFee: "~$5",
       newsTags: ["Airdrop"],
+      guideContent: "## Mint Scroll Genesis NFT\n\n**⚡ Flash Task — Act Fast!** Only 500 spots FCFS.\n\n### Steps\n\n1. Bridge ETH to Scroll network at [bridge.scroll.io](https://bridge.scroll.io).\n2. Navigate to [scroll.io/genesis-nft](https://scroll.io/genesis-nft).\n3. Connect your wallet.\n4. Click **Mint** and confirm the transaction (~$5 gas).\n5. Verify NFT in your wallet.\n\n> ⏰ Expires in **2 hours** — do not delay!",
     },
     createdAt: "2024-03-12T06:00:00Z",
     processedAt: "2024-03-12T06:01:00Z",
@@ -101,6 +104,7 @@ export const mockInboxItems: InboxItem[] = [
       estimatedCost: "$60-120",
       potentialValue: "high",
       subtasks: ["Bridge ETH to Scroll", "Swap on Ambient Finance", "Provide liquidity", "Register Scroll Name Service"],
+      guideContent: "## Scroll Ecosystem Tasks\n\n**Project:** Scroll (zkEVM L2) | **Backed by:** Polychain Capital ($50M)\n\n### Why This Matters\nSnapshot expected Q1 2024. On-chain volume and variety are key scoring factors.\n\n### Steps\n\n1. **Bridge ETH to Scroll** via [bridge.scroll.io](https://bridge.scroll.io) — min $30 recommended.\n2. **Swap on Ambient Finance** — perform 2-3 swaps with varied amounts.\n3. **Provide liquidity** — add at least $50 to any pool, hold for 7+ days.\n4. **Register a Scroll Name** — go to [scrollns.io](https://scrollns.io) and register a `.scroll` name.\n\n### Tips\n- Spread interactions over multiple days for a more natural pattern.\n- Estimated total cost: $60-120 depending on gas prices.",
     },
     createdAt: "2024-01-26T10:30:00Z",
     processedAt: "2024-01-26T10:31:00Z",
@@ -123,6 +127,7 @@ export const mockInboxItems: InboxItem[] = [
       steps: ["Go to Lynex", "Swap any token pair", "Claim XP"],
       gasFee: "~$2",
       subtasks: ["Connect wallet on Linea", "Perform swap on Lynex", "Verify XP credited"],
+      guideContent: "## Linea Daily Voyage — Swap on Lynex\n\n**Resets at 00:00 UTC daily.** Complete this every day this week.\n\n### Steps\n\n1. Go to [lynex.fi](https://lynex.fi) on Linea network.\n2. Select any token pair (USDC/ETH recommended).\n3. Swap a small amount ($5-10 is fine).\n4. Your **Linea XP** will be credited automatically within a few minutes.\n\n### Tips\n- Set a reminder for daily reset to not miss a day.\n- Gas fee is approximately $2 per swap on Linea.",
     },
     createdAt: "2024-01-26T14:15:00Z",
     processedAt: "2024-01-26T14:16:00Z",

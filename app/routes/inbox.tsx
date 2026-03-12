@@ -16,6 +16,10 @@ import {
   Clock,
   Tag,
   AlertTriangle,
+  BookOpen,
+  RotateCcw,
+  Eye,
+  Edit3,
 } from "lucide-react";
 import classNames from "classnames";
 import { toast } from "sonner";
@@ -137,6 +141,9 @@ export default function InboxPage() {
           id: `task-inbox-${Date.now()}`,
           title: data.taskTitle || data.projectName || "Untitled Task",
           description: data.steps?.join("\n") ?? "",
+          guide: data.guideContent?.trim() || undefined,
+          guideSource: data.guideContent?.trim() ? "ai-extracted" : undefined,
+          guideSourceLabel: selectedItem.sourceType === "telegram" ? "Telegram" : selectedItem.sourceType === "link" ? selectedItem.sourceUrl ?? "Link" : "Inbox",
           type: data.taskType ?? "onchain",
           priority: data.taskPriority ?? "medium",
           status: "backlog",
@@ -385,6 +392,99 @@ interface ReviewWorkspaceProps {
   isSubmitting: boolean;
 }
 
+// ---- Guide Editor ----
+
+interface GuideEditorProps {
+  rawContent: string;
+  guideContent: string;
+  onChange: (val: string) => void;
+  aiSteps?: string[];
+}
+
+function GuideEditor({ rawContent, guideContent, onChange, aiSteps }: GuideEditorProps) {
+  const [previewMode, setPreviewMode] = React.useState(false);
+
+  /** Build default guide text from AI steps when user clicks Sync */
+  function buildFromSteps(): string {
+    if (!aiSteps || aiSteps.length === 0) return rawContent;
+    const lines = aiSteps.map((s, i) => `${i + 1}. ${s}`).join("\n");
+    return `## Steps\n\n${lines}`;
+  }
+
+  function handleSync() {
+    onChange(buildFromSteps());
+  }
+
+  return (
+    <div className={styles.guideEditor}>
+      <div className={styles.guideEditorHeader}>
+        <label className={styles.fieldLabel}>
+          <BookOpen size={12} style={{ verticalAlign: "middle", marginRight: 4 }} />
+          GUIDE Content
+          <span className={styles.guideBadge}>AI-Editable</span>
+        </label>
+        <div className={styles.guideEditorActions}>
+          <button
+            type="button"
+            className={classNames(styles.guideModeBtn, { [styles.guideModeBtnActive]: !previewMode })}
+            onClick={() => setPreviewMode(false)}
+          >
+            <Edit3 size={11} /> Edit
+          </button>
+          <button
+            type="button"
+            className={classNames(styles.guideModeBtn, { [styles.guideModeBtnActive]: previewMode })}
+            onClick={() => setPreviewMode(true)}
+          >
+            <Eye size={11} /> Preview
+          </button>
+          <button
+            type="button"
+            className={styles.guideSyncBtn}
+            onClick={handleSync}
+            title="Sync from AI-extracted steps"
+          >
+            <RotateCcw size={11} /> Sync from Source
+          </button>
+        </div>
+      </div>
+
+      {previewMode ? (
+        <div className={styles.guidePreview}>
+          {guideContent ? (
+            guideContent.split("\n").map((line, i) => {
+              const t = line.trim();
+              if (t.startsWith("## ")) return <h3 key={i} className={styles.guidePreviewH2}>{t.slice(3)}</h3>;
+              if (t.startsWith("### ")) return <h4 key={i} className={styles.guidePreviewH3}>{t.slice(4)}</h4>;
+              if (t.startsWith("> ")) return <p key={i} className={styles.guidePreviewBlockquote}>{t.slice(2)}</p>;
+              if (/^\d+\.\s/.test(t)) return <p key={i} className={styles.guidePreviewLi}>{t}</p>;
+              if (t.startsWith("- ")) return <p key={i} className={styles.guidePreviewLi}>{t}</p>;
+              if (t === "") return <div key={i} style={{ height: 8 }} />;
+              return <p key={i} className={styles.guidePreviewP}
+                dangerouslySetInnerHTML={{ __html: t
+                  .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                  .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                  .replace(/\[(.+?)\]\((.+?)\)/g, "<a href=\"$2\" target=\"_blank\" rel=\"noopener noreferrer\">$1</a>")
+                }}
+              />;
+            })
+          ) : (
+            <p className={styles.guidePreviewEmpty}>No guide content yet. Switch to Edit and start writing, or click &ldquo;Sync from Source&rdquo;.</p>
+          )}
+        </div>
+      ) : (
+        <textarea
+          className={styles.guideTextarea}
+          value={guideContent}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={"Write step-by-step guide here. Markdown supported:\n\n## Title\n\n1. First step\n2. Second step\n\n**Bold**, *italic*, > tip"}
+          rows={8}
+        />
+      )}
+    </div>
+  );
+}
+
 function ReviewWorkspace({ item, editData, setEditData, onApprove, onDiscard, isSubmitting }: ReviewWorkspaceProps) {
   const [showOriginal, setShowOriginal] = React.useState(true);
 
@@ -597,6 +697,14 @@ function ReviewWorkspace({ item, editData, setEditData, onApprove, onDiscard, is
                   </button>
                 </div>
               </div>
+
+              {/* Guide Content Editor */}
+              <GuideEditor
+                rawContent={item.rawContent}
+                guideContent={editData.guideContent ?? ""}
+                onChange={(val) => updateField("guideContent", val)}
+                aiSteps={editData.steps}
+              />
 
               {editData.steps && editData.steps.length > 0 && (
                 <div className={styles.field}>

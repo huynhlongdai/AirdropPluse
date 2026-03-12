@@ -1,8 +1,8 @@
 import React from "react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Trash2, BookOpen, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import classNames from "classnames";
-import type { Task, TaskType, TaskPriority, TaskStatus, RecurringCycle, Subtask } from "~/data/tasks";
+import type { Task, TaskType, TaskPriority, TaskStatus, RecurringCycle, Subtask, GuideSource } from "~/data/tasks";
 import type { Project } from "~/data/projects";
 import styles from "./task-form-drawer.module.css";
 
@@ -27,6 +27,9 @@ export default function TaskFormDrawer({ task, projects, onClose, onSave }: Prop
   const [title, setTitle] = React.useState(task?.title ?? "");
   const [description, setDescription] = React.useState(task?.description ?? "");
   const [guideUrl, setGuideUrl] = React.useState(task?.guideUrl ?? "");
+  const [guide, setGuide] = React.useState(task?.guide ?? "");
+  const [guideSource] = React.useState<GuideSource>(task?.guideSource ?? "manual");
+  const [guideSourceLabel] = React.useState(task?.guideSourceLabel ?? "");
   const [type, setType] = React.useState<TaskType>(task?.type ?? "onchain");
   const [priority, setPriority] = React.useState<TaskPriority>(task?.priority ?? "medium");
   const [status, setStatus] = React.useState<TaskStatus>(task?.status ?? "backlog");
@@ -63,6 +66,9 @@ export default function TaskFormDrawer({ task, projects, onClose, onSave }: Prop
       title: title.trim(),
       description: description.trim() || undefined,
       guideUrl: guideUrl.trim() || undefined,
+      guide: guide.trim() || undefined,
+      guideSource: guide.trim() ? guideSource : undefined,
+      guideSourceLabel: guideSourceLabel || undefined,
       type,
       priority,
       status,
@@ -148,6 +154,35 @@ export default function TaskFormDrawer({ task, projects, onClose, onSave }: Prop
               <label className={styles.label}>Guide URL</label>
               <input className={styles.input} value={guideUrl} onChange={(e) => setGuideUrl(e.target.value)} placeholder="https://..." />
             </div>
+          </div>
+
+          <div className={styles.guideSection}>
+            <div className={styles.guideSectionHeader}>
+              <label className={styles.label}>
+                <BookOpen size={14} style={{ verticalAlign: "middle", marginRight: "4px" }} />
+                Step-by-Step Guide
+              </label>
+              {task?.guideSource === "ai-extracted" && (
+                <span className={styles.guideSourceBadge}>
+                  AI \ {task?.guideSourceLabel ?? "Inbox"}
+                </span>
+              )}
+              {task?.guideSource === "manual" && guide && (
+                <span className={classNames(styles.guideSourceBadge, styles.guideSourceManual)}>
+                  Manual
+                </span>
+              )}
+            </div>
+            <textarea
+              className={classNames(styles.textarea, styles.guideTextarea)}
+              value={guide}
+              onChange={(e) => setGuide(e.target.value)}
+              placeholder={"Write step-by-step instructions here. Markdown is supported:\n\n## Title\n\n1. First step\n2. Second step\n\n**Bold**, *italic*, [link](https://...)"}
+              rows={8}
+            />
+            <p className={styles.guideHint}>
+              Supports Markdown. Use <code>**bold**</code>, <code>*italic*</code>, numbered lists, and <code>[link](url)</code>.
+            </p>
           </div>
 
           {/* Classification */}

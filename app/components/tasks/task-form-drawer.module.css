@@ -236,6 +236,62 @@
   color: var(--color-neutral-12);
 }
 
+/* Guide section */
+.guideSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.guideSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.guideTextarea {
+  min-height: 180px;
+  font-family: monospace;
+  font-size: var(--font-size-1);
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.guideSourceBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  background: color-mix(in srgb, var(--color-accent-9) 12%, transparent);
+  color: var(--color-accent-11);
+  border: 1px solid color-mix(in srgb, var(--color-accent-9) 25%, transparent);
+  border-radius: var(--radius-round);
+  font-size: var(--font-size-00);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.guideSourceManual {
+  background: color-mix(in srgb, var(--color-success-9) 12%, transparent);
+  color: var(--color-success-11);
+  border-color: color-mix(in srgb, var(--color-success-9) 25%, transparent);
+}
+
+.guideHint {
+  font-size: var(--font-size-00);
+  color: var(--color-neutral-9);
+  line-height: 1.4;
+}
+
+.guideHint code {
+  background: var(--color-neutral-4);
+  border-radius: var(--radius-1);
+  padding: 1px 4px;
+  font-family: monospace;
+  font-size: 0.85em;
+}
+
 /* Footer */
 .footer {
   display: flex;

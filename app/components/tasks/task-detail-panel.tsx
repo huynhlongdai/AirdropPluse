@@ -2,7 +2,7 @@ import React from "react";
 import {
   X, ExternalLink, Zap, Twitter, RefreshCw, Flame, CheckCircle2,
   AlertCircle, Link2, CalendarClock, Activity, FileText, Wallet,
-  ListChecks, GitBranch, Hash
+  ListChecks, GitBranch, Hash, BookOpen, Pencil, Check, RotateCcw
 } from "lucide-react";
 import classNames from "classnames";
 import type { Task, Subtask, TaskNote } from "~/data/tasks";
@@ -160,7 +160,7 @@ export default function TaskDetailPanel({ task: initialTask, onClose, onTaskUpda
 
         {/* Body */}
         <div className={styles.body}>
-          {activeTab === "overview" && <OverviewTab task={task} subtaskProgress={subtaskProgress} subtasksDone={subtasksDone} subtasksTotal={subtasksTotal} execProgress={execProgress} doneCount={doneCount} totalCount={totalCount} />}
+          {activeTab === "overview" && <OverviewTab task={task} subtaskProgress={subtaskProgress} subtasksDone={subtasksDone} subtasksTotal={subtasksTotal} execProgress={execProgress} doneCount={doneCount} totalCount={totalCount} onTaskUpdate={(updated) => { setTask(updated); onTaskUpdate?.(updated); }} />}
           {activeTab === "subtasks" && <SubtasksTab task={task} onToggle={handleSubtaskToggle} subtasksDone={subtasksDone} subtasksTotal={subtasksTotal} subtaskProgress={subtaskProgress} />}
           {activeTab === "execution" && <ExecutionMatrixTab task={task} onTaskUpdate={(updated) => { setTask(updated); onTaskUpdate?.(updated); }} />}
           {activeTab === "notes" && <NotesTab task={task} newNote={newNote} onNewNoteChange={setNewNote} onAddNote={handleAddNote} />}
@@ -171,8 +171,113 @@ export default function TaskDetailPanel({ task: initialTask, onClose, onTaskUpda
   );
 }
 
+/* ── Guide Section ──────────────────────────────────────── */
+function GuideSection({ task, onTaskUpdate }: { task: Task; onTaskUpdate?: (t: Task) => void }) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [draft, setDraft] = React.useState(task.guide ?? "");
+
+  // Sync when task changes
+  React.useEffect(() => { setDraft(task.guide ?? ""); }, [task.guide]);
+
+  function handleSave() {
+    onTaskUpdate?.({ ...task, guide: draft.trim() || undefined, guideSource: draft.trim() ? (task.guideSource ?? "manual") : undefined });
+    setIsEditing(false);
+  }
+
+  function handleCancel() {
+    setDraft(task.guide ?? "");
+    setIsEditing(false);
+  }
+
+  if (!task.guide && !isEditing) {
+    return (
+      <div className={styles.section}>
+        <p className={styles.sectionTitle}><BookOpen size={13} /> Guide</p>
+        <button className={styles.guideAddBtn} onClick={() => setIsEditing(true)} type="button">
+          <Pencil size={13} /> Write step-by-step guide...
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.section}>
+      <div className={styles.guideSectionHeader}>
+        <p className={styles.sectionTitle}><BookOpen size={13} /> Guide</p>
+        <div className={styles.guideHeaderRight}>
+          {!isEditing && task.guideSource && (
+            <span className={classNames(styles.guideSourceBadge, {
+              [styles.guideSourceAi]: task.guideSource === "ai-extracted",
+              [styles.guideSourceManual]: task.guideSource === "manual",
+            })}>
+              {task.guideSource === "ai-extracted" ? `AI \ ${task.guideSourceLabel ?? "Inbox"}` : "Manual"}
+            </span>
+          )}
+          {!isEditing && (
+            <button className={styles.guideEditBtn} onClick={() => setIsEditing(true)} type="button">
+              <Pencil size={12} /> Quick Edit
+            </button>
+          )}
+        </div>
+      </div>
+
+      {isEditing ? (
+        <div className={styles.guideEditArea}>
+          <textarea
+            className={styles.guideEditTextarea}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            rows={12}
+            autoFocus
+            placeholder="Write step-by-step instructions using Markdown..."
+          />
+          <div className={styles.guideEditActions}>
+            <button className={styles.guideSaveBtn} onClick={handleSave} type="button">
+              <Check size={13} /> Save Guide
+            </button>
+            <button className={styles.guideCancelBtn} onClick={handleCancel} type="button">
+              Cancel
+            </button>
+            {task.guide && (
+              <button
+                className={styles.guideResetBtn}
+                onClick={() => setDraft(task.guide ?? "")}
+                type="button"
+                title="Reset to saved version"
+              >
+                <RotateCcw size={12} /> Reset
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className={styles.guideContent}>
+          {(task.guide ?? "").split("\n").map((line, i) => {
+            const trimmed = line.trim();
+            if (trimmed.startsWith("## ")) return <h3 key={i} className={styles.guideLine_h2}>{trimmed.slice(3)}</h3>;
+            if (trimmed.startsWith("### ")) return <h4 key={i} className={styles.guideLine_h3}>{trimmed.slice(4)}</h4>;
+            if (trimmed.startsWith("> ")) return <blockquote key={i} className={styles.guideLine_blockquote}>{trimmed.slice(2)}</blockquote>;
+            if (/^\d+\.\s/.test(trimmed)) return <p key={i} className={styles.guideLine_ol}>{trimmed}</p>;
+            if (trimmed.startsWith("- ")) return <p key={i} className={styles.guideLine_ul}>{trimmed.slice(2)}</p>;
+            if (trimmed === "") return <div key={i} className={styles.guideLine_spacer} />;
+            return (
+              <p key={i} className={styles.guideLine_p}
+                dangerouslySetInnerHTML={{ __html: trimmed
+                  .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                  .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                  .replace(/\[(.+?)\]\((.+?)\)/g, "<a href=\"$2\" target=\"_blank\" rel=\"noopener noreferrer\">$1</a>")
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Tab: Overview ───────────────────────────────────────── */
-function OverviewTab({ task, subtaskProgress, subtasksDone, subtasksTotal, execProgress, doneCount, totalCount }: {
+function OverviewTab({ task, subtaskProgress, subtasksDone, subtasksTotal, execProgress, doneCount, totalCount, onTaskUpdate }: {
   task: Task;
   subtaskProgress: number;
   subtasksDone: number;
@@ -180,6 +285,7 @@ function OverviewTab({ task, subtaskProgress, subtasksDone, subtasksTotal, execP
   execProgress: number;
   doneCount: number;
   totalCount: number;
+  onTaskUpdate?: (t: Task) => void;
 }) {
   return (
     <>
@@ -191,10 +297,13 @@ function OverviewTab({ task, subtaskProgress, subtasksDone, subtasksTotal, execP
         </div>
       )}
 
-      {/* Guide Link */}
+      {/* Guide Section */}
+      <GuideSection task={task} onTaskUpdate={onTaskUpdate} />
+
+      {/* Guide URL link */}
       {task.guideUrl && (
         <div className={styles.section}>
-          <p className={styles.sectionTitle}><ExternalLink size={13} /> Guide</p>
+          <p className={styles.sectionTitle}><ExternalLink size={13} /> Official Docs</p>
           <a href={task.guideUrl} target="_blank" rel="noopener noreferrer" className={styles.guideLink}>
             <ExternalLink size={13} /> Open Official Guide / Docs
           </a>
