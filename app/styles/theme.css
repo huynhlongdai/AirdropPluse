@@ -25,19 +25,19 @@ html {
   --color-neutral-contrast: var(--slate-contrast);
 
   /* Accent colors - Purple for crypto/web3 theme */
-  --color-accent-1: var(--purple-1);
-  --color-accent-2: var(--purple-2);
-  --color-accent-3: var(--purple-3);
-  --color-accent-4: var(--purple-4);
-  --color-accent-5: var(--purple-5);
-  --color-accent-6: var(--purple-6);
-  --color-accent-7: var(--purple-7);
-  --color-accent-8: var(--purple-8);
-  --color-accent-9: var(--purple-9);
-  --color-accent-10: var(--purple-10);
-  --color-accent-11: var(--purple-11);
-  --color-accent-12: var(--purple-12);
-  --color-accent-contrast: var(--purple-contrast);
+  --color-accent-1: var(--indigo-1);
+  --color-accent-2: var(--indigo-2);
+  --color-accent-3: var(--indigo-3);
+  --color-accent-4: var(--indigo-4);
+  --color-accent-5: var(--indigo-5);
+  --color-accent-6: var(--indigo-6);
+  --color-accent-7: var(--indigo-7);
+  --color-accent-8: var(--indigo-8);
+  --color-accent-9: var(--indigo-9);
+  --color-accent-10: var(--indigo-10);
+  --color-accent-11: var(--indigo-11);
+  --color-accent-12: var(--indigo-12);
+  --color-accent-contrast: var(--indigo-contrast);
 
   /* Error colors */
   --color-error-1: var(--red-1);

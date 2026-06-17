@@ -2,7 +2,55 @@ html {
   font: var(--font-body);
   color: var(--color-neutral-11);
   background-color: var(--color-neutral-1);
+
+  /* ── Warm cream page background */
+  --page-bg: #f5f4f0;
+
+  /* ── Gold/amber accent */
+  --color-gold-50:  #fefce8;
+  --color-gold-100: #fef3c7;
+  --color-gold-400: #facc15;
+  --color-gold-500: #c9a028;
+  --color-gold-600: #a07b1a;
+
+  /* ── Chain brand colors */
+  --chain-eth:    #627EEA;
+  --chain-bsc:    #F0B90B;
+  --chain-arb:    #4dabf7;
+  --chain-op:     #FF0420;
+  --chain-base:   #0052FF;
+  --chain-zksync: #8B6EF5;
+  --chain-sol:    #9945FF;
+  --chain-sui:    #4DA2FF;
+  --chain-stark:  #E97A2D;
+  --chain-polygon:#8247E5;
+  --chain-avax:   #E84142;
+
+  /* ── Potential value */
+  --value-very-high: #c9a028;
+  --value-high:      #22c55e;
+  --value-medium:    #3b82f6;
+  --value-low:       #a1a1aa;
+
+  /* ── Project status */
+  --status-discovery: #a1a1aa;
+  --status-active:    #22c55e;
+  --status-snapshot:  #c9a028;
+  --status-claiming:  #f59e0b;
+  --status-claimed:   #6366f1;
+  --status-archived:  #71717a;
+
+  /* ── Primary button (dark) */
+  --btn-primary-bg:    #1c1c1e;
+  --btn-primary-color: #ffffff;
+  --btn-primary-hover: #2e2e30;
+
+  /* ── Danger button */
+  --btn-danger-bg:    #fee2e2;
+  --btn-danger-color: #dc2626;
+  --btn-danger-hover: #fecaca;
 }
+
 
 .sr-only {
   position: absolute;
@@ -15,3 +63,24 @@ html {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* ══ Global button reset — dark primary style ══════════════════ */
+/* Any element with data-variant="primary" or .btn-primary gets dark style */
+[data-btn="primary"],
+.btnPrimary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-color);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+[data-btn="primary"]:hover,
+.btnPrimary:hover { background: var(--btn-primary-hover); }

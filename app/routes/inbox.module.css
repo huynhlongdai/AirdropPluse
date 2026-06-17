@@ -1,6 +1,6 @@
 .inbox {
   min-height: 100vh;
-  background: var(--color-neutral-1);
+  background: var(--page-bg, #f5f4f0);
 }
 
 .container {
@@ -22,13 +22,13 @@
 .headerLeft {}
 
 .title {
-  font: var(--font-display);
+  font-size: 22px; font-weight: 700; letter-spacing: -0.03em;
   color: var(--color-neutral-12);
   margin-bottom: var(--space-1);
 }
 
 .subtitle {
-  font: var(--font-subheading);
+  font-size: 13px;
   color: var(--color-neutral-11);
 }
 
@@ -90,8 +90,8 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background: linear-gradient(135deg, var(--color-accent-9), var(--color-accent-10));
-  color: var(--color-accent-contrast);
+  background: #1c1c1e;
+  color: #ffffff;
   border-radius: var(--radius-3);
   font-weight: 600;
   font-size: var(--font-size-1);
@@ -135,8 +135,8 @@
 }
 
 .filterTabActive {
-  background: var(--color-accent-9);
-  color: var(--color-accent-contrast);
+  background: #1c1c1e;
+  color: #ffffff;
 }
 
 /* Add form */
@@ -151,7 +151,7 @@
 .addTextarea {
   width: 100%;
   padding: var(--space-3);
-  background: var(--color-neutral-1);
+  background: var(--page-bg, #f5f4f0);
   border: 1px solid var(--color-neutral-6);
   border-radius: var(--radius-2);
   color: var(--color-neutral-12);
@@ -184,8 +184,8 @@
 
 .addSubmitBtn {
   padding: var(--space-2) var(--space-4);
-  background: var(--color-accent-9);
-  color: var(--color-accent-contrast);
+  background: #1c1c1e;
+  color: #ffffff;
   border: none;
   border-radius: var(--radius-2);
   font-weight: 600;
@@ -219,7 +219,7 @@
 }
 
 .sectionTitle {
-  font: var(--font-heading);
+  font-size: 18px; font-weight: 700;
   color: var(--color-neutral-12);
   display: flex;
   align-items: center;
@@ -233,8 +233,8 @@
   min-width: 22px;
   height: 22px;
   padding: 0 var(--space-1);
-  background: var(--color-accent-9);
-  color: var(--color-accent-contrast);
+  background: #1c1c1e;
+  color: #ffffff;
   border-radius: var(--radius-round);
   font-size: var(--font-size-0);
   font-weight: 700;
@@ -425,7 +425,7 @@
 }
 
 .reviewTitle {
-  font: var(--font-heading);
+  font-size: 18px; font-weight: 700;
   color: var(--color-neutral-12);
 }
 
@@ -640,8 +640,8 @@
   justify-content: center;
   width: 20px;
   height: 20px;
-  background: var(--color-accent-9);
-  color: var(--color-accent-contrast);
+  background: #1c1c1e;
+  color: #ffffff;
   border-radius: var(--radius-round);
   font-size: 10px;
   font-weight: 700;
@@ -887,8 +887,8 @@
 }
 
 .guideModeBtnActive {
-  background: var(--color-accent-9);
-  color: var(--color-accent-contrast);
+  background: #1c1c1e;
+  color: #ffffff;
   border-color: var(--color-accent-9);
 }
 
@@ -928,7 +928,7 @@
 
 .guideTextarea:focus {
   outline: none;
-  background: var(--color-neutral-1);
+  background: var(--page-bg, #f5f4f0);
 }
 
 .guidePreview {

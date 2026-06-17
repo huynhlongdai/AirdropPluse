@@ -2,18 +2,23 @@ import React from "react";
 import {
   X, ExternalLink, Zap, Twitter, RefreshCw, Flame, CheckCircle2,
   AlertCircle, Link2, CalendarClock, Activity, FileText, Wallet,
-  ListChecks, GitBranch, Hash, BookOpen, Pencil, Check, RotateCcw
+  ListChecks, GitBranch, Hash, BookOpen, Pencil, Check, RotateCcw, Bot
 } from "lucide-react";
 import classNames from "classnames";
 import type { Task, Subtask, TaskNote } from "~/data/tasks";
 import { TASK_TYPE_LABELS } from "~/data/tasks";
+import type { IdentityProfile } from "~/data/identities";
 import ExecutionMatrixTab from "./execution-matrix-tab";
+import AgentDispatchDrawer from "./agent-dispatch-drawer";
+import { useStore } from "~/hooks/use-store";
 import styles from "./task-detail-panel.module.css";
 
 interface TaskDetailPanelProps {
   task: Task;
   onClose: () => void;
   onTaskUpdate?: (updatedTask: Task) => void;
+  /** Pass identities from the parent loader so the drawer can list them */
+  identities?: IdentityProfile[];
 }
 
 type TabId = "overview" | "subtasks" | "execution" | "notes" | "activity";
@@ -52,10 +57,12 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-export default function TaskDetailPanel({ task: initialTask, onClose, onTaskUpdate }: TaskDetailPanelProps) {
+export default function TaskDetailPanel({ task: initialTask, onClose, onTaskUpdate, identities = [] }: TaskDetailPanelProps) {
+  const { getJobsForTask } = useStore();
   const [activeTab, setActiveTab] = React.useState<TabId>("overview");
   const [task, setTask] = React.useState<Task>(initialTask);
   const [newNote, setNewNote] = React.useState("");
+  const [showAgentDrawer, setShowAgentDrawer] = React.useState(false);
 
   // Sync if prop changes (e.g. parent updates)
   React.useEffect(() => { setTask(initialTask); }, [initialTask]);
@@ -98,6 +105,9 @@ export default function TaskDetailPanel({ task: initialTask, onClose, onTaskUpda
     if (e.target === e.currentTarget) onClose();
   }
 
+  const agentJobs = getJobsForTask(task.id);
+  const activeAgentJob = agentJobs.find((j) => j.status === "running" || j.status === "queued");
+
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
     { id: "overview", label: "Overview", icon: <FileText size={13} /> },
     { id: "subtasks", label: `Subtasks ${subtasksTotal > 0 ? `(${subtasksDone}/${subtasksTotal})` : ""}`, icon: <ListChecks size={13} /> },
@@ -139,10 +149,38 @@ export default function TaskDetailPanel({ task: initialTask, onClose, onTaskUpda
               )}
             </div>
           </div>
-          <button className={styles.closeButton} onClick={onClose} type="button" aria-label="Close">
-            <X size={18} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* Run with Agent button */}
+            <button
+              className={styles.agentBtn}
+              onClick={() => setShowAgentDrawer(true)}
+              type="button"
+              title="Dispatch task to an AI agent"
+            >
+              <Bot size={13} />
+              {activeAgentJob ? (
+                <span style={{ color: "var(--color-amber-600, #d97706)" }}>Agent running…</span>
+              ) : (
+                "Run with Agent"
+              )}
+              {agentJobs.length > 0 && (
+                <span className={styles.agentJobCount}>{agentJobs.length}</span>
+              )}
+            </button>
+            <button className={styles.closeButton} onClick={onClose} type="button" aria-label="Close">
+              <X size={18} />
+            </button>
+          </div>
         </div>
+
+        {/* Agent Dispatch Drawer */}
+        {showAgentDrawer && (
+          <AgentDispatchDrawer
+            task={task}
+            identities={identities}
+            onClose={() => setShowAgentDrawer(false)}
+          />
+        )}
 
         {/* Tabs */}
         <div className={styles.tabs}>

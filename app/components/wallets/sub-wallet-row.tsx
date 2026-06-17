@@ -5,6 +5,34 @@ import type { SubWallet } from "~/data/wallets";
 import { CHAIN_LABELS, CHAIN_EXPLORERS } from "~/data/wallets";
 import styles from "./sub-wallet-row.module.css";
 
+// Chain brand colors
+const CHAIN_COLOR: Record<string, string> = {
+  ethereum: "#627EEA", eth: "#627EEA",
+  bsc: "#c9930d", bnb: "#c9930d",
+  arbitrum: "#2980d9", arb: "#2980d9",
+  optimism: "#cc0010", op: "#cc0010",
+  base: "#0040cc",
+  zksync: "#6844c9",
+  solana: "#7c2fd4", sol: "#7c2fd4",
+  sui: "#2d7db3",
+  starknet: "#c45d10", stark: "#c45d10",
+  polygon: "#6929c4",
+  avalanche: "#b32222", avax: "#b32222",
+};
+const CHAIN_BG: Record<string, string> = {
+  ethereum: "#e8ecff", eth: "#e8ecff",
+  bsc: "#fff8e0", bnb: "#fff8e0",
+  arbitrum: "#e6f4ff", arb: "#e6f4ff",
+  optimism: "#fff0f0", op: "#fff0f0",
+  base: "#e6eeff",
+  zksync: "#ede9fe",
+  solana: "#f3e9ff", sol: "#f3e9ff",
+  sui: "#e6f4ff",
+  starknet: "#fff3e6", stark: "#fff3e6",
+  polygon: "#ede9fe",
+  avalanche: "#ffe8e8", avax: "#ffe8e8",
+};
+
 interface SubWalletRowProps {
   wallet: SubWallet;
   selected: boolean;
@@ -112,7 +140,14 @@ export default function SubWalletRow({ wallet, selected, onSelect, hasSybilConfl
       {/* Chains */}
       <div className={styles.chains}>
         {wallet.chains.slice(0, 4).map((c) => (
-          <span key={c} className={styles.chainBadge}>{CHAIN_LABELS[c]}</span>
+          <span key={c} className={`${styles.chainBadge} ${styles[`chain_${c}`] ?? ""}`}
+            style={{
+              background: CHAIN_BG[c] ?? "#f0f0f3",
+              color:      CHAIN_COLOR[c] ?? "#52525b",
+              border:     `1px solid ${CHAIN_COLOR[c] ?? "#c4c4c8"}44`,
+            }}>
+            {CHAIN_LABELS[c]}
+          </span>
         ))}
         {wallet.chains.length > 4 && (
           <span className={styles.chainBadge}>+{wallet.chains.length - 4}</span>

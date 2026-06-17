@@ -1,265 +1,298 @@
 import { Link } from "react-router";
 import {
-  Rocket,
-  TrendingUp,
-  CheckCircle2,
-  DollarSign,
-  Inbox,
-  ArrowRight,
-  Wallet,
-  ListTodo,
-  Activity,
-  Users,
+  Rocket, TrendingUp, CheckCircle2, ArrowRight, Wallet,
+  Activity, Users, AlertCircle, Flame, Clock, Bot, CalendarDays, Zap
 } from "lucide-react";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend,
+} from "recharts";
 import type { Route } from "./+types/home";
-import { ProjectCard } from "~/components/project-card";
 import { mockProjects } from "~/data/projects";
-import { mockInboxItems } from "~/data/inbox";
-import { mockWallets } from "~/data/wallets";
+import { mockTasks } from "~/data/tasks";
+import { mockMainWallets } from "~/data/wallets";
 import { mockIdentities } from "~/data/identities";
 import styles from "./home.module.css";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "AirdropPulse - Your Crypto Airdrop Intelligence Hub" },
-    {
-      name: "description",
-      content: "Track, manage, and optimize your crypto airdrop opportunities with AI-powered insights",
-    },
+    { title: "Dashboard — AirdropPulse" },
+    { name: "description", content: "Airdrop intelligence dashboard" },
   ];
 }
 
+// ── Fake activity data (7-day trend) ────────────────────────────
+const activityData = [
+  { day: "Mon", tasks: 3, value: 120 },
+  { day: "Tue", tasks: 7, value: 340 },
+  { day: "Wed", tasks: 4, value: 280 },
+  { day: "Thu", tasks: 9, value: 520 },
+  { day: "Fri", tasks: 5, value: 410 },
+  { day: "Sat", tasks: 2, value: 190 },
+  { day: "Sun", tasks: 6, value: 380 },
+];
+
+const TASK_PIE_COLORS = ["#22c55e", "#f59e0b", "#3b82f6", "#e5e7eb"];
+
 export default function Home() {
   const activeProjects = mockProjects.filter((p) => p.status === "active" || p.status === "snapshot");
-  const highPriorityProjects = mockProjects.filter((p) => p.priority === "high");
-  const pendingInbox = mockInboxItems.filter((i) => i.status === "review");
+  const hotProjects    = mockProjects.filter((p) => p.isHot);
+  const snapshotSoon   = mockProjects.filter((p) => p.snapshotDate).slice(0, 3);
+  const highPriority   = mockProjects.filter((p) => p.priority === "high").slice(0, 4);
 
-  const totalTasks = mockProjects.reduce((acc, p) => acc + p.tasks.length, 0);
-  const completedTasks = mockProjects.reduce((acc, p) => acc + p.tasks.filter((t) => t.completed).length, 0);
-  const tasksDueToday = mockProjects
-    .flatMap((p) =>
-      p.tasks
-        .filter((t) => !t.completed)
-        .map((task) => ({
-          ...task,
-          projectName: p.name,
-          projectId: p.id,
-        })),
-    )
-    .slice(0, 5);
+  const totalTasks     = mockTasks.length;
+  const completedTasks = mockTasks.filter((t) => t.status === "completed").length;
+  const inProgressTasks = mockTasks.filter((t) => t.status === "in-progress").length;
+  const backlogTasks   = mockTasks.filter((t) => t.status === "backlog").length;
+  const overdueTasks   = mockTasks.filter((t) => t.isOverdue).length;
 
-  const activeWallets = mockWallets.filter((w) => w.isActive);
-  const activeIdentities = mockIdentities.filter((i) => i.status === "active");
+  const taskProgress   = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  const totalSubWallets = mockMainWallets.reduce((acc, w) => acc + w.subWallets.length, 0);
+  const activeIdentities = mockIdentities.filter((i) => i.status === "active").length;
+
+  const taskPieData = [
+    { name: "Completed", value: completedTasks },
+    { name: "In Progress", value: inProgressTasks },
+    { name: "Backlog", value: backlogTasks },
+    { name: "Review", value: mockTasks.filter((t) => t.status === "review").length },
+  ];
 
   return (
-    <main className={styles.home}>
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <h1 className={styles.title}>AirdropPulse</h1>
-          <p className={styles.subtitle}>
-            Your centralized intelligence hub for crypto airdrops and retroactive opportunities
+    <main className={styles.page}>
+      {/* ── Top header ── */}
+      <div className={styles.topBar}>
+        <div>
+          <h1 className={styles.pageTitle}>Dashboard</h1>
+          <p className={styles.pageSubtitle}>
+            {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
           </p>
-        </header>
+        </div>
+        <Link to="/tasks" className={styles.newTaskBtn}>
+          <Zap size={14} /> Quick Task
+        </Link>
+      </div>
 
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <div className={styles.statHeader}>
-              <span className={styles.statLabel}>Active Campaigns</span>
-              <Rocket className={styles.statIcon} />
-            </div>
-            <div className={styles.statValue}>{activeProjects.length}</div>
-            <div className={styles.statChange}>
-              <TrendingUp style={{ width: "16px", height: "16px" }} />
-              +2 this week
-            </div>
+      {/* ── Hero stats row ── */}
+      <div className={styles.statsRow}>
+        <div className={styles.statCard}>
+          <div className={styles.statTop}>
+            <span className={styles.statLabel}>Active Campaigns</span>
+            <span className={`${styles.statIconWrap} ${styles.iconGold}`}><Rocket size={16}/></span>
           </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statHeader}>
-              <span className={styles.statLabel}>Tasks Completed</span>
-              <CheckCircle2 className={styles.statIcon} />
-            </div>
-            <div className={styles.statValue}>
-              {completedTasks}/{totalTasks}
-            </div>
-            <div className={styles.statChange}>
-              <TrendingUp style={{ width: "16px", height: "16px" }} />
-              {Math.round((completedTasks / totalTasks) * 100)}% complete
-            </div>
-          </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statHeader}>
-              <span className={styles.statLabel}>Potential Rewards</span>
-              <DollarSign className={styles.statIcon} />
-            </div>
-            <div className={styles.statValue}>$12.5K</div>
-            <div className={styles.statChange}>
-              <TrendingUp style={{ width: "16px", height: "16px" }} />
-              Estimated value
-            </div>
-          </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statHeader}>
-              <span className={styles.statLabel}>Pending Review</span>
-              <Inbox className={styles.statIcon} />
-            </div>
-            <div className={styles.statValue}>{pendingInbox.length}</div>
-            <div className={styles.statChange}>
-              <Activity style={{ width: "16px", height: "16px" }} />
-              Needs attention
-            </div>
+          <div className={styles.statNum}>{activeProjects.length}</div>
+          <div className={styles.statSub}>
+            <TrendingUp size={12}/> {hotProjects.length} hot right now
           </div>
         </div>
 
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              <Inbox className={styles.sectionIcon} />
-              Recent Ingestions
-            </h2>
-            <Link to="/inbox" className={styles.viewAllLink}>
-              View All
-              <ArrowRight style={{ width: "16px", height: "16px" }} />
-            </Link>
+        <div className={styles.statCard}>
+          <div className={styles.statTop}>
+            <span className={styles.statLabel}>Task Progress</span>
+            <span className={`${styles.statIconWrap} ${styles.iconGreen}`}><CheckCircle2 size={16}/></span>
           </div>
-          <div className={styles.inboxList}>
-            {pendingInbox.slice(0, 3).map((item) => (
-              <Link to="/inbox" key={item.id} className={styles.inboxItem}>
-                <div className={styles.inboxHeader}>
-                  <span className={styles.inboxTitle}>{item.extractedData?.projectName || "Processing..."}</span>
-                  <span className={styles.inboxBadge}>{item.status}</span>
-                </div>
-                <p className={styles.inboxContent}>{item.rawContent}</p>
-              </Link>
-            ))}
+          <div className={styles.statNum}>{completedTasks}<span className={styles.statNumSub}>/{totalTasks}</span></div>
+          <div className={styles.statBar}>
+            <div className={styles.statBarFill} style={{ width: `${taskProgress}%` }} />
           </div>
-        </section>
+          <div className={styles.statSub}>{taskProgress}% complete</div>
+        </div>
 
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              <ListTodo className={styles.sectionIcon} />
-              Priority Checklist
-            </h2>
-            <Link to="/tasks" className={styles.viewAllLink}>
-              View Calendar
-              <ArrowRight style={{ width: "16px", height: "16px" }} />
-            </Link>
+        <div className={styles.statCard}>
+          <div className={styles.statTop}>
+            <span className={styles.statLabel}>Wallets Active</span>
+            <span className={`${styles.statIconWrap} ${styles.iconBlue}`}><Wallet size={16}/></span>
           </div>
-          <div className={styles.tasksList}>
-            {tasksDueToday.map((task) => (
-              <div key={task.id} className={styles.taskItem}>
-                <input type="checkbox" className={styles.taskCheckbox} checked={task.completed} readOnly />
-                <div className={styles.taskContent}>
-                  <div className={styles.taskProject}>{task.projectName}</div>
-                  <div className={styles.taskDescription}>{task.description}</div>
-                  <div className={styles.taskMeta}>
-                    <span>High Priority</span>
-                    <span>•</span>
-                    <span>Due Today</span>
+          <div className={styles.statNum}>{totalSubWallets}</div>
+          <div className={styles.statSub}>
+            <Users size={12}/> {activeIdentities} identities
+          </div>
+        </div>
+
+        <div className={styles.statCard}>
+          <div className={styles.statTop}>
+            <span className={styles.statLabel}>Overdue Tasks</span>
+            <span className={`${styles.statIconWrap} ${styles.iconRed}`}><AlertCircle size={16}/></span>
+          </div>
+          <div className={styles.statNum}>{overdueTasks}</div>
+          <div className={styles.statSub}>
+            <Clock size={12}/> Needs attention
+          </div>
+        </div>
+      </div>
+
+      {/* ── Main content: chart + dark card ── */}
+      <div className={styles.mainRow}>
+        {/* Left: Activity chart */}
+        <div className={styles.chartCard}>
+          <div className={styles.chartHeader}>
+            <div>
+              <div className={styles.chartTitle}>Task Activity</div>
+              <div className={styles.chartSub}>Last 7 days</div>
+            </div>
+            <span className={styles.chartBadge}>Weekly View</span>
+          </div>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={activityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="taskGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#c9a028" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#c9a028" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-neutral-4, #e8e8ec)" />
+              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "var(--color-neutral-9, #8b8d98)" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: "var(--color-neutral-9, #8b8d98)" }} axisLine={false} tickLine={false} />
+              <Tooltip
+                contentStyle={{ background: "#fff", border: "1px solid #e4e4e7", borderRadius: 8, fontSize: 12 }}
+                labelStyle={{ fontWeight: 600 }}
+              />
+              <Area type="monotone" dataKey="tasks" stroke="#c9a028" strokeWidth={2} fill="url(#taskGradient)" dot={{ r: 3, fill: "#c9a028" }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Right: Dark priority card */}
+        <div className={styles.darkCard}>
+          <div className={styles.darkCardHeader}>
+            <Flame size={16} className={styles.darkCardIcon} />
+            <span>Priority Alerts</span>
+          </div>
+          {snapshotSoon.length > 0 ? (
+            <div className={styles.alertList}>
+              {snapshotSoon.map((p) => (
+                <Link key={p.id} to={`/projects/${p.id}`} className={styles.alertItem}>
+                  <div className={styles.alertName}>{p.name}</div>
+                  <div className={styles.alertMeta}>
+                    <Clock size={10} />
+                    Snapshot: {p.snapshotDate}
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              <Rocket className={styles.sectionIcon} />
-              High Priority Campaigns
-            </h2>
-            <Link to="/projects" className={styles.viewAllLink}>
-              View All Projects
-              <ArrowRight style={{ width: "16px", height: "16px" }} />
-            </Link>
-          </div>
-          <div className={styles.projectsGrid}>
-            {highPriorityProjects.slice(0, 3).map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-        </section>
-
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              <Users className={styles.sectionIcon} />
-              Active Identities
-            </h2>
-            <Link to="/identities" className={styles.viewAllLink}>
-              Manage Identities
-              <ArrowRight style={{ width: "16px", height: "16px" }} />
-            </Link>
-          </div>
-          <div className={styles.walletGrid}>
-            {activeIdentities.slice(0, 4).map((identity) => (
-              <div key={identity.id} className={styles.walletCard}>
-                <div className={styles.walletHeader}>
-                  <span className={styles.walletName}>{identity.alias}</span>
-                  <span className={styles.walletGroup}>{identity.status}</span>
-                </div>
-                <div className={styles.walletAddress}>
-                  {identity.email?.address ?? "No email"}
-                </div>
-                <div className={styles.walletStats}>
-                  <div className={styles.walletStat}>
-                    <div className={styles.walletStatValue}>{identity.linkedWallets.length}</div>
-                    <div className={styles.walletStatLabel}>Wallets</div>
+                  <div className={styles.alertValue}>
+                    {p.potentialValue === "very-high" ? "⚡ Very High" : p.potentialValue}
                   </div>
-                  <div className={styles.walletStat}>
-                    <div className={styles.walletStatValue}>
-                      {[identity.twitter, identity.discord, identity.telegram, identity.tiktok].filter(Boolean).length}
-                    </div>
-                    <div className={styles.walletStatLabel}>Platforms</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.alertEmpty}>No urgent snapshots</div>
+          )}
 
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              <Wallet className={styles.sectionIcon} />
-              Wallet Performance
-            </h2>
-            <Link to="/wallets" className={styles.viewAllLink}>
-              Manage Wallets
-              <ArrowRight style={{ width: "16px", height: "16px" }} />
-            </Link>
-          </div>
-          <div className={styles.walletGrid}>
-            {activeWallets.slice(0, 4).map((wallet) => {
-              const walletTasks = mockProjects.flatMap((p) => p.tasks.filter((t) => t.walletId === wallet.id));
-              const walletCompleted = walletTasks.filter((t) => t.completed).length;
+          <div className={styles.darkDivider} />
 
+          <div className={styles.darkMetrics}>
+            <div className={styles.darkMetric}>
+              <div className={styles.darkMetricNum}>{mockProjects.filter(p => p.hypeScore >= 80).length}</div>
+              <div className={styles.darkMetricLabel}>High Hype</div>
+            </div>
+            <div className={styles.darkMetric}>
+              <div className={styles.darkMetricNum}>{mockTasks.filter(t => t.recurring === "daily").length}</div>
+              <div className={styles.darkMetricLabel}>Daily Tasks</div>
+            </div>
+            <div className={styles.darkMetric}>
+              <div className={styles.darkMetricNum}>{mockProjects.filter(p => p.status === "snapshot").length}</div>
+              <div className={styles.darkMetricLabel}>Snapshot</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Bottom 3-col: projects + pie chart + agent jobs ── */}
+      <div className={styles.bottomRow}>
+
+        {/* Col 1: Project progress */}
+        <div className={styles.bottomCard}>
+          <div className={styles.bottomCardHeader}>
+            <span className={styles.bottomCardTitle}>Campaign Progress</span>
+            <Link to="/projects" className={styles.seeAll}>View all <ArrowRight size={12}/></Link>
+          </div>
+          <div className={styles.projectList}>
+            {highPriority.map((p) => {
+              const done = p.tasks.filter(t => t.completed).length;
+              const total = p.tasks.length;
+              const pct = total > 0 ? Math.round((done / total) * 100) : 0;
               return (
-                <div key={wallet.id} className={styles.walletCard}>
-                  <div className={styles.walletHeader}>
-                    <span className={styles.walletName}>{wallet.name}</span>
-                    <span className={styles.walletGroup}>{wallet.group}</span>
+                <Link key={p.id} to={`/projects/${p.id}`} className={styles.projectRow}>
+                  <div className={styles.projectRowTop}>
+                    <span className={styles.projectRowName}>{p.name}</span>
+                    <span className={styles.projectRowPct}>{pct}%</span>
                   </div>
-                  <div className={styles.walletAddress}>{wallet.address}</div>
-                  <div className={styles.walletStats}>
-                    <div className={styles.walletStat}>
-                      <div className={styles.walletStatValue}>{walletCompleted}</div>
-                      <div className={styles.walletStatLabel}>Tasks Done</div>
-                    </div>
-                    <div className={styles.walletStat}>
-                      <div className={styles.walletStatValue}>{wallet.chain.length}</div>
-                      <div className={styles.walletStatLabel}>Chains</div>
-                    </div>
+                  <div className={styles.progressBar}>
+                    <div className={styles.progressFill} style={{ width: `${pct}%`, background: pct >= 80 ? "#22c55e" : pct >= 40 ? "#c9a028" : "#e84a5f" }} />
                   </div>
-                </div>
+                  <div className={styles.projectRowMeta}>{done}/{total} tasks · {p.chain.join(", ")}</div>
+                </Link>
               );
             })}
           </div>
-        </section>
+        </div>
+
+        {/* Col 2: Task distribution pie */}
+        <div className={styles.bottomCard}>
+          <div className={styles.bottomCardHeader}>
+            <span className={styles.bottomCardTitle}>Task Distribution</span>
+            <Link to="/tasks" className={styles.seeAll}>View all <ArrowRight size={12}/></Link>
+          </div>
+          <ResponsiveContainer width="100%" height={180}>
+            <PieChart>
+              <Pie
+                data={taskPieData}
+                cx="50%"
+                cy="50%"
+                innerRadius={50}
+                outerRadius={80}
+                paddingAngle={3}
+                dataKey="value"
+              >
+                {taskPieData.map((_, i) => (
+                  <Cell key={i} fill={TASK_PIE_COLORS[i]} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e4e4e7" }} />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Col 3: Quick actions + agent status */}
+        <div className={styles.bottomCard}>
+          <div className={styles.bottomCardHeader}>
+            <span className={styles.bottomCardTitle}>Quick Actions</span>
+          </div>
+          <div className={styles.quickActions}>
+            <Link to="/tasks" className={styles.quickAction}>
+              <span className={`${styles.qaIcon} ${styles.qaIconBlue}`}><CalendarDays size={16}/></span>
+              <div>
+                <div className={styles.qaLabel}>Today's Tasks</div>
+                <div className={styles.qaSub}>{mockTasks.filter(t => t.recurring === "daily").length} daily · {inProgressTasks} in progress</div>
+              </div>
+              <ArrowRight size={14} className={styles.qaArrow} />
+            </Link>
+            <Link to="/inbox" className={styles.quickAction}>
+              <span className={`${styles.qaIcon} ${styles.qaIconGold}`}><Activity size={16}/></span>
+              <div>
+                <div className={styles.qaLabel}>Inbox</div>
+                <div className={styles.qaSub}>Scan for new opportunities</div>
+              </div>
+              <ArrowRight size={14} className={styles.qaArrow} />
+            </Link>
+            <Link to="/tasks" className={styles.quickAction}>
+              <span className={`${styles.qaIcon} ${styles.qaIconPurple}`}><Bot size={16}/></span>
+              <div>
+                <div className={styles.qaLabel}>Agent Dispatch</div>
+                <div className={styles.qaSub}>Automate tasks with AI agents</div>
+              </div>
+              <ArrowRight size={14} className={styles.qaArrow} />
+            </Link>
+            <Link to="/identities" className={styles.quickAction}>
+              <span className={`${styles.qaIcon} ${styles.qaIconGreen}`}><Users size={16}/></span>
+              <div>
+                <div className={styles.qaLabel}>Identities</div>
+                <div className={styles.qaSub}>{activeIdentities} active profiles</div>
+              </div>
+              <ArrowRight size={14} className={styles.qaArrow} />
+            </Link>
+          </div>
+        </div>
       </div>
     </main>
   );

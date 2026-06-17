@@ -292,6 +292,28 @@ export interface Database {
         Insert: Omit<Database["public"]["Tables"]["api_logs"]["Row"], "id"> & { id?: string };
         Update: Partial<Database["public"]["Tables"]["api_logs"]["Row"]>;
       };
+      agent_jobs: {
+        Row: {
+          id: string;
+          task_id: string;
+          identity_id: string;
+          wallet_id: string | null;
+          name: string;
+          instructions: string | null;
+          status: "pending" | "queued" | "running" | "completed" | "failed" | "cancelled";
+          result_summary: string | null;
+          tx_hash: string | null;
+          proof_image_url: string | null;
+          error_message: string | null;
+          created_at: string;
+          queued_at: string | null;
+          started_at: string | null;
+          completed_at: string | null;
+          runner_id: string | null;
+        };
+        Insert: Omit<Database["public"]["Tables"]["agent_jobs"]["Row"], "id"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["agent_jobs"]["Row"]>;
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

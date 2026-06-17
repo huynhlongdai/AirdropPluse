@@ -1,6 +1,6 @@
 .wallets {
   min-height: 100vh;
-  background: var(--color-neutral-1);
+  background: var(--page-bg, #f5f4f0);
 }
 
 .container {
@@ -19,13 +19,13 @@
 }
 
 .title {
-  font: var(--font-display);
+  font-size: 22px; font-weight: 700; letter-spacing: -0.03em;
   color: var(--color-neutral-12);
   margin-bottom: var(--space-1);
 }
 
 .subtitle {
-  font: var(--font-subheading);
+  font-size: 13px;
   color: var(--color-neutral-11);
 }
 
@@ -34,8 +34,8 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-5);
-  background: var(--color-accent-9);
-  color: var(--color-accent-contrast);
+  background: #1c1c1e;
+  color: #ffffff;
   border: none;
   border-radius: var(--radius-3);
   font-size: var(--font-size-2);
@@ -47,7 +47,7 @@
 }
 
 .addBtn:hover {
-  background: var(--color-accent-10);
+  background: #2e2e30;
 }
 
 /* Stats bar */
@@ -107,8 +107,8 @@
 }
 
 .tabActive {
-  background: var(--color-accent-9);
-  color: var(--color-accent-contrast);
+  background: #1c1c1e;
+  color: #ffffff;
 }
 
 /* Toolbar */
@@ -377,7 +377,7 @@
 
 .walletMiniProgressFill {
   height: 100%;
-  background: var(--color-accent-9);
+  background: #1c1c1e;
   border-radius: var(--radius-round);
   transition: width 0.3s var(--ease-out);
 }
@@ -395,7 +395,7 @@
 .cellCompleted { background: color-mix(in srgb, var(--color-success-9) 6%, transparent); }
 .cellInProgress { background: color-mix(in srgb, var(--color-accent-9) 6%, transparent); }
 .cellFailed { background: color-mix(in srgb, var(--color-error-9) 6%, transparent); }
-.cellNotAssigned { background: var(--color-neutral-1); }
+.cellNotAssigned { background: var(--page-bg, #f5f4f0); }
 
 .notAssigned {
   font-size: 0.75rem;
@@ -487,3 +487,26 @@
     width: 100%;
   }
 }
+
+/* ── Chain badge colors ──────────────────────────────── */
+.chainBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+.chain-ethereum, .chain-eth   { background: #e8ecff; color: #627EEA; border-color: #627EEA44; }
+.chain-bsc,  .chain-bnb       { background: #fff8e0; color: #c9930d; border-color: #F0B90B55; }
+.chain-arbitrum, .chain-arb   { background: #e6f4ff; color: #2980d9; border-color: #4dabf766; }
+.chain-optimism, .chain-op    { background: #fff0f0; color: #cc0010; border-color: #FF042055; }
+.chain-base                   { background: #e6eeff; color: #0040cc; border-color: #0052FF55; }
+.chain-zksync                 { background: #ede9fe; color: #6844c9; border-color: #8B6EF566; }
+.chain-solana, .chain-sol     { background: #f3e9ff; color: #7c2fd4; border-color: #9945FF55; }
+.chain-sui                    { background: #e6f4ff; color: #2d7db3; border-color: #4DA2FF55; }
+.chain-polygon                { background: #ede9fe; color: #6929c4; border-color: #8247E555; }
+.chain-starknet, .chain-stark { background: #fff3e6; color: #c45d10; border-color: #E97A2D55; }
+.chain-avalanche, .chain-avax { background: #ffe8e8; color: #b32222; border-color: #E8414255; }

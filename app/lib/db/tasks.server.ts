@@ -162,12 +162,16 @@ export async function createTask(t: Task): Promise<Task> {
 
   if (error) throw new Error(`createTask: ${error.message}`);
 
-  // Insert executions, subtasks, notes, activity logs in parallel
+  // BUG #1 FIX: use the DB-returned id (data.id) — not t.id — because Supabase
+  // may generate a new UUID even when one is supplied (or the caller omitted it).
+  const savedId = (data as Record<string, unknown>).id as string;
+
+  // Insert executions, subtasks in parallel — both keyed to savedId
   await Promise.all([
     t.executions?.length
       ? supabase.from("task_executions").insert(
           t.executions.map((e) => ({
-            task_id: t.id,
+            task_id: savedId,
             wallet_id: e.walletId,
             wallet_name: e.walletName,
             address: e.address,
@@ -183,7 +187,7 @@ export async function createTask(t: Task): Promise<Task> {
       ? supabase.from("task_subtasks").insert(
           t.subtasks.map((s, i) => ({
             id: s.id,
-            task_id: t.id,
+            task_id: savedId,
             title: s.title,
             completed: s.completed,
             completed_at: s.completedAt ?? null,
@@ -200,10 +204,12 @@ export async function updateTask(t: Task): Promise<Task> {
   const { error } = await supabase.from("tasks").update(taskToRow(t)).eq("id", t.id);
   if (error) throw new Error(`updateTask: ${error.message}`);
 
-  // Replace executions
-  await supabase.from("task_executions").delete().eq("task_id", t.id);
+  // BUG #2 FIX: use upsert (onConflict: id) + delete orphans — safer than
+  // delete-all-then-insert which loses data if the insert throws mid-way.
+
+  // Upsert executions, then delete rows no longer in the list
   if (t.executions?.length) {
-    await supabase.from("task_executions").insert(
+    const { error: upsertExecErr } = await supabase.from("task_executions").upsert(
       t.executions.map((e) => ({
         task_id: t.id,
         wallet_id: e.walletId,
@@ -214,14 +220,20 @@ export async function updateTask(t: Task): Promise<Task> {
         tx_hash: e.txHash ?? null,
         actual_gas_fee: e.actualGasFee ?? null,
         note: e.note ?? null,
-      }))
+      })),
+      { onConflict: "task_id,wallet_id" }
     );
+    if (upsertExecErr) throw new Error(`updateTask executions: ${upsertExecErr.message}`);
+    // Remove execution rows for wallets no longer in the list
+    const keepWalletIds = t.executions.map((e) => e.walletId);
+    await supabase.from("task_executions").delete().eq("task_id", t.id).not("wallet_id", "in", `(${keepWalletIds.map((id) => `'${id}'`).join(",")})`);
+  } else {
+    await supabase.from("task_executions").delete().eq("task_id", t.id);
   }
 
-  // Replace subtasks
-  await supabase.from("task_subtasks").delete().eq("task_id", t.id);
+  // Upsert subtasks, then delete orphans
   if (t.subtasks?.length) {
-    await supabase.from("task_subtasks").insert(
+    const { error: upsertSubErr } = await supabase.from("task_subtasks").upsert(
       t.subtasks.map((s, i) => ({
         id: s.id,
         task_id: t.id,
@@ -229,8 +241,14 @@ export async function updateTask(t: Task): Promise<Task> {
         completed: s.completed,
         completed_at: s.completedAt ?? null,
         sort_order: i,
-      }))
+      })),
+      { onConflict: "id" }
     );
+    if (upsertSubErr) throw new Error(`updateTask subtasks: ${upsertSubErr.message}`);
+    const keepSubIds = t.subtasks.map((s) => s.id);
+    await supabase.from("task_subtasks").delete().eq("task_id", t.id).not("id", "in", `(${keepSubIds.map((id) => `'${id}'`).join(",")})`);
+  } else {
+    await supabase.from("task_subtasks").delete().eq("task_id", t.id);
   }
 
   // Append new notes (don't replace existing)

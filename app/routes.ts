@@ -22,5 +22,8 @@ export default [
   route("api/tasks/:id", "routes/api.tasks.$id.ts"),
   route("api/inbox", "routes/api.inbox.ts"),
   route("api/inbox/:id", "routes/api.inbox.$id.ts"),
+  // Agent Jobs
+  route("api/agent-jobs", "routes/api.agent-jobs.ts"),
+  route("api/agent-jobs/:id", "routes/api.agent-jobs.$id.ts"),
   ...devRoutes,
 ] satisfies RouteConfig;

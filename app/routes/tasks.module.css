@@ -1,6 +1,6 @@
 .tasks {
   min-height: 100vh;
-  background: var(--color-neutral-1);
+  background: var(--page-bg, #f5f4f0);
 }
 
 .container {
@@ -15,20 +15,22 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-5);
   flex-wrap: wrap;
 }
 
 .headerLeft {}
 
 .title {
-  font: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
   color: var(--color-neutral-12);
-  margin-bottom: var(--space-1);
+  margin-bottom: 2px;
+  letter-spacing: -0.03em;
 }
 
 .subtitle {
-  font: var(--font-subheading);
+  font-size: 13px;
   color: var(--color-neutral-10);
 }
 
@@ -36,39 +38,40 @@
 .statsBar {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
+  gap: 12px;
+  margin-bottom: var(--space-5);
 }
 
 .statCard {
-  background: var(--color-neutral-2);
-  border: var(--border-size-1) solid var(--color-neutral-6);
-  border-radius: var(--radius-4);
-  padding: var(--space-4) var(--space-5);
+  background: #fff;
+  border: 1px solid var(--color-neutral-4, #e7e8ec);
+  border-radius: 12px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 4px;
 }
 
 .statLabel {
-  font-size: var(--font-size-0);
+  font-size: 11px;
   font-weight: 600;
-  color: var(--color-neutral-10);
+  color: var(--color-neutral-9);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .statValue {
-  font-size: var(--font-size-5);
+  font-size: 28px;
   font-weight: 800;
   color: var(--color-neutral-12);
   line-height: 1;
+  letter-spacing: -0.03em;
 }
 
-.statValueAccent { color: var(--color-accent-10); }
-.statValueWarning { color: var(--amber-10); }
-.statValueError { color: var(--color-error-10); }
-.statValueSuccess { color: var(--color-success-10); }
+.statValueAccent { color: #4f46e5; }
+.statValueWarning { color: #c9a028; }
+.statValueError   { color: #dc2626; }
+.statValueSuccess { color: #16a34a; }
 
 /* ── Toolbar ─────────────────────────────────────────── */
 .toolbar {
@@ -81,21 +84,22 @@
 
 .viewToggle {
   display: flex;
-  gap: var(--space-1);
-  background: var(--color-neutral-3);
+  gap: 2px;
+  background: #fff;
   padding: 3px;
-  border-radius: var(--radius-3);
+  border-radius: 10px;
+  border: 1px solid var(--color-neutral-4, #e7e8ec);
 }
 
 .viewButton {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
+  padding: 6px 12px;
   background: transparent;
-  color: var(--color-neutral-11);
-  border-radius: var(--radius-2);
-  font-size: var(--font-size-1);
+  color: var(--color-neutral-10);
+  border-radius: 7px;
+  font-size: 12px;
   font-weight: 600;
   transition: all 150ms var(--ease);
   border: none;
@@ -104,12 +108,13 @@
 }
 
 .viewButton:hover {
-  background: var(--color-neutral-4);
+  background: var(--color-neutral-3);
+  color: var(--color-neutral-12);
 }
 
 .viewButtonActive {
-  background: var(--color-accent-9);
-  color: var(--color-accent-contrast);
+  background: #1c1c1e;
+  color: #fff;
 }
 
 .filterGroup {
@@ -190,10 +195,10 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background: var(--color-accent-9);
+  background: #1c1c1e;
   border: none;
   border-radius: var(--radius-3);
-  color: var(--color-accent-contrast);
+  color: #ffffff;
   font-size: var(--font-size-1);
   font-weight: 600;
   cursor: pointer;
@@ -203,7 +208,7 @@
 }
 
 .addButton:hover {
-  background: var(--color-accent-10);
+  background: #2e2e30;
 }
 
 .emptyAddBtn {

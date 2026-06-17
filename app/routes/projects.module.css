@@ -1,6 +1,6 @@
 .projects {
   min-height: 100vh;
-  background: var(--color-neutral-1);
+  background: var(--page-bg, #f5f4f0);
 }
 
 .container {
@@ -19,13 +19,13 @@
 }
 
 .title {
-  font: var(--font-display);
+  font-size: 22px; font-weight: 700; letter-spacing: -0.03em;
   color: var(--color-neutral-12);
   margin-bottom: var(--space-1);
 }
 
 .subtitle {
-  font: var(--font-subheading);
+  font-size: 13px;
   color: var(--color-neutral-11);
 }
 
@@ -42,10 +42,10 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background: var(--color-accent-9);
+  background: #1c1c1e;
   border: none;
   border-radius: var(--radius-3);
-  color: var(--color-accent-contrast);
+  color: #ffffff;
   font-size: var(--font-size-1);
   font-weight: 600;
   cursor: pointer;
@@ -54,7 +54,7 @@
 }
 
 .addButton:hover {
-  background: var(--color-accent-10);
+  background: #2e2e30;
 }
 
 /* View Toggle */
@@ -87,7 +87,7 @@
 }
 
 .viewButtonActive {
-  background: var(--color-neutral-1);
+  background: var(--page-bg, #f5f4f0);
   color: var(--color-accent-11);
   box-shadow: var(--shadow-1);
 }

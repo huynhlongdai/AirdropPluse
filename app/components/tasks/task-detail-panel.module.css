@@ -57,6 +57,37 @@
   color: var(--color-neutral-12);
 }
 
+/* Run with Agent button */
+.agentBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--color-neutral-6, #d4d4d8);
+  border-radius: 6px;
+  background: var(--color-surface, #fff);
+  color: var(--color-neutral-11, #27272a);
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+  white-space: nowrap;
+}
+.agentBtn:hover {
+  border-color: var(--color-primary, #6366f1);
+  background: var(--color-primary-50, #eef2ff);
+  color: var(--color-primary, #6366f1);
+}
+.agentJobCount {
+  background: var(--color-primary, #6366f1);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 5px;
+  line-height: 1.4;
+}
+
 .title {
   font: var(--font-heading);
   font-size: 1rem;

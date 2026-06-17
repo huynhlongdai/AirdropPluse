@@ -370,8 +370,8 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background: var(--color-accent-9);
-  color: var(--color-accent-contrast);
+  background: #1c1c1e;
+  color: #ffffff;
   border: none;
   border-radius: var(--radius-2);
   font-size: var(--font-size-0);
@@ -382,7 +382,7 @@
 }
 
 .btnPrimary:hover {
-  background: var(--color-accent-10);
+  background: #2e2e30;
 }
 
 .btnOutline {
@@ -411,8 +411,8 @@
 
 .btnSm {
   padding: 4px var(--space-3);
-  background: var(--color-accent-9);
-  color: var(--color-accent-contrast);
+  background: #1c1c1e;
+  color: #ffffff;
   border: none;
   border-radius: var(--radius-2);
   font-size: var(--font-size-00);
@@ -426,7 +426,7 @@
 }
 
 .btnSm:hover:not(:disabled) {
-  background: var(--color-accent-10);
+  background: #2e2e30;
 }
 
 .btnSm:disabled {
@@ -445,7 +445,7 @@
 }
 
 .btnSmAccent {
-  background: var(--color-accent-9);
+  background: #1c1c1e;
 }
 
 .iconBtn {
