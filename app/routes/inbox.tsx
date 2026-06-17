@@ -531,6 +531,8 @@ function ReviewWorkspace({ item, editData, setEditData, onApprove, onDiscard, is
         </div>
       </div>
 
+      <div className={styles.workspaceBody}>
+
       {/* Flash expiry warning */}
       {item.itemType === "flash-task" && item.extractedData?.flashExpiresAt && (
         <div className={styles.flashWarning}>
@@ -809,28 +811,26 @@ function ReviewWorkspace({ item, editData, setEditData, onApprove, onDiscard, is
         </div>
       )}
 
-      {/* Actions */}
+      </div>{/* end workspaceBody */}
+
+      {/* Sticky Actions footer */}
       {item.status !== "processing" && (
         <div className={styles.actions}>
-          <button
-            className={classNames(styles.actionButton, styles.approveButton)}
-            onClick={onApprove}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <span className={styles.loadingDot} />
-            ) : (
-              <Check size={16} />
-            )}
-            {isSubmitting ? "Committing..." : "Approve & Commit"}
-          </button>
           <button
             className={classNames(styles.actionButton, styles.rejectButton)}
             onClick={onDiscard}
             disabled={isSubmitting}
           >
-            <X size={16} />
+            <X size={15} />
             Discard
+          </button>
+          <button
+            className={classNames(styles.actionButton, styles.approveButton)}
+            onClick={onApprove}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? <span className={styles.loadingDot} /> : <Check size={15} />}
+            {isSubmitting ? "Committing…" : "Approve & Commit"}
           </button>
         </div>
       )}

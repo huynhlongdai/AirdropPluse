@@ -259,35 +259,36 @@
 
 /* Queue item */
 .item {
-  background: var(--color-neutral-2);
-  border: 1px solid var(--color-neutral-6);
-  border-radius: var(--radius-3);
-  padding: var(--space-3);
-  transition: all 150ms var(--ease);
+  background: #fff;
+  border: 1px solid var(--color-neutral-4, #e7e8ec);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: all 0.12s;
   cursor: pointer;
 }
 
 .item:hover {
-  border-color: var(--color-accent-7);
-  box-shadow: var(--shadow-1);
+  border-color: var(--color-neutral-7);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .itemActive {
-  border-color: var(--color-accent-9);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent-9) 20%, transparent);
+  border-color: #1c1c1e;
+  box-shadow: 0 0 0 2px rgba(28,28,30,0.12);
 }
 
 .itemFlash {
-  border-left: 3px solid var(--red-9);
+  border-left: 3px solid #ef4444;
+  background: #fffbfb;
 }
 
 .itemFlash.itemActive {
-  border-color: var(--red-9);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--red-9) 20%, transparent);
+  border-color: #ef4444;
+  background: #fff5f5;
 }
 
 .itemNews {
-  border-left: 3px solid var(--violet-9);
+  border-left: 3px solid #7c3aed;
 }
 
 .itemHeader {
@@ -301,31 +302,26 @@
 .itemTypePill {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-2);
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  border: 1px solid transparent;
 }
 
 .pillFlash {
-  background: color-mix(in srgb, var(--red-9) 15%, transparent);
-  color: var(--red-11);
-  border: 1px solid var(--red-7);
+  background: #fee2e2; color: #dc2626; border-color: #fca5a588;
 }
 
 .pillTask {
-  background: color-mix(in srgb, var(--color-accent-9) 15%, transparent);
-  color: var(--color-accent-11);
-  border: 1px solid var(--color-accent-7);
+  background: #dbeafe; color: #2563eb; border-color: #93c5fd88;
 }
 
 .pillNews {
-  background: color-mix(in srgb, var(--violet-9) 15%, transparent);
-  color: var(--violet-11);
-  border: 1px solid var(--violet-7);
+  background: #ede9fe; color: #7c3aed; border-color: #c4b5fd88;
 }
 
 .itemSource {
@@ -356,10 +352,10 @@
 }
 
 .itemTitle {
-  font-size: var(--font-size-1);
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--color-neutral-12);
-  margin-bottom: var(--space-1);
+  margin-bottom: 4px;
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -367,9 +363,9 @@
 }
 
 .itemContent {
-  font-size: var(--font-size-0);
-  color: var(--color-neutral-11);
-  line-height: var(--font-lineheight-3);
+  font-size: 12px;
+  color: var(--color-neutral-10);
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -409,24 +405,36 @@
 }
 
 .workspace {
-  padding: var(--space-5);
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  height: 100%;
+  overflow: hidden;
+}
+
+.workspaceBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .workspaceHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--color-neutral-5);
+  gap: 10px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--color-neutral-4, #e7e8ec);
+  background: #fff;
+  flex-shrink: 0;
 }
 
 .reviewTitle {
-  font-size: 18px; font-weight: 700;
+  font-size: 15px; font-weight: 700;
   color: var(--color-neutral-12);
+  letter-spacing: -0.02em;
 }
 
 .workspaceTypeBadge {
@@ -771,52 +779,43 @@
 /* Actions */
 .actions {
   display: flex;
-  gap: var(--space-3);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-neutral-5);
+  gap: 10px;
+  padding: 14px 22px;
+  border-top: 1px solid var(--color-neutral-4, #e7e8ec);
+  background: #fff;
+  flex-shrink: 0;
 }
 
 .actionButton {
   flex: 1;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-3);
-  font-weight: 600;
-  font-size: var(--font-size-1);
-  transition: all 150ms var(--ease);
+  padding: 10px 16px;
+  border-radius: 9px;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all 0.12s;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: 7px;
   border: none;
   cursor: pointer;
 }
 
 .actionButton:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none !important;
 }
 
 .approveButton {
-  background: var(--color-success-9);
-  color: var(--color-success-contrast);
+  background: #16a34a; color: #fff;
 }
-
-.approveButton:hover:not(:disabled) {
-  background: var(--color-success-10);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-1);
-}
+.approveButton:hover:not(:disabled) { background: #15803d; }
 
 .rejectButton {
-  background: var(--color-error-3);
-  color: var(--color-error-11);
-  border: 1px solid var(--color-error-6);
+  background: #fff; color: #dc2626;
+  border: 1px solid #fca5a5;
 }
-
-.rejectButton:hover:not(:disabled) {
-  background: var(--color-error-4);
-}
+.rejectButton:hover:not(:disabled) { background: #fee2e2; }
 
 .loadingDot {
   display: block;

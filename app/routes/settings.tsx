@@ -1,24 +1,8 @@
 import React from "react";
 import {
-  Zap,
-  Brain,
-  Tags,
-  Shield,
-  CheckCircle2,
-  AlertCircle,
-  XCircle,
-  AlertTriangle,
-  Eye,
-  EyeOff,
-  RefreshCw,
-  Plus,
-  Trash2,
-  ChevronDown,
-  ExternalLink,
-  Activity,
-  Clock,
-  Key,
-  Star,
+  Zap, Brain, Tags, Shield, CheckCircle2, AlertCircle, XCircle,
+  AlertTriangle, Eye, EyeOff, RefreshCw, Plus, Trash2, ChevronDown,
+  ExternalLink, Activity, Clock, Key, Star, Bot, Globe, Cpu, Sliders,
 } from "lucide-react";
 import type { Route } from "./+types/settings";
 import {
@@ -42,13 +26,14 @@ export function meta({}: Route.MetaArgs) {
   return [{ title: "Settings — AirdropPulse" }];
 }
 
-type Tab = "integrations" | "ai-config" | "categories" | "security";
+type Tab = "integrations" | "ai-config" | "categories" | "agent" | "security";
 
 const TAB_CONFIG: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: "integrations", label: "Integrations", icon: Zap },
-  { id: "ai-config", label: "AI Configuration", icon: Brain },
-  { id: "categories", label: "Category Manager", icon: Tags },
-  { id: "security", label: "Security & Logs", icon: Shield },
+  { id: "integrations", label: "Integrations",    icon: Zap },
+  { id: "ai-config",   label: "AI Configuration", icon: Brain },
+  { id: "categories",  label: "Category Manager", icon: Tags },
+  { id: "agent",       label: "Agent Settings",   icon: Bot },
+  { id: "security",    label: "Security & Logs",  icon: Shield },
 ];
 
 export default function Settings() {
@@ -78,9 +63,10 @@ export default function Settings() {
 
       <div className={styles.tabContent}>
         {activeTab === "integrations" && <IntegrationsTab />}
-        {activeTab === "ai-config" && <AiConfigTab />}
-        {activeTab === "categories" && <CategoriesTab />}
-        {activeTab === "security" && <SecurityTab />}
+        {activeTab === "ai-config"    && <AiConfigTab />}
+        {activeTab === "categories"   && <CategoriesTab />}
+        {activeTab === "agent"        && <AgentSettingsTab />}
+        {activeTab === "security"     && <SecurityTab />}
       </div>
     </div>
   );
@@ -896,6 +882,220 @@ function SecurityTab() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ─── AGENT SETTINGS TAB ─────────────────────────────────────────── */
+
+function AgentSettingsTab() {
+  const [browserEndpoint, setBrowserEndpoint]         = React.useState("https://connect.browserbase.com");
+  const [apiKey, setApiKey]                           = React.useState("bb_live_••••••••••••••••");
+  const [showApiKey, setShowApiKey]                   = React.useState(false);
+  const [concurrentJobs, setConcurrentJobs]           = React.useState(3);
+  const [jobTimeout, setJobTimeout]                   = React.useState(300);
+  const [retryOnFail, setRetryOnFail]                 = React.useState(true);
+  const [maxRetries, setMaxRetries]                   = React.useState(2);
+  const [screenshotOnFail, setScreenshotOnFail]       = React.useState(true);
+  const [proxyEnabled, setProxyEnabled]               = React.useState(false);
+  const [proxyHost, setProxyHost]                     = React.useState("");
+  const [proxyPort, setProxyPort]                     = React.useState("8080");
+  const [proxyUser, setProxyUser]                     = React.useState("");
+  const [humanDelay, setHumanDelay]                   = React.useState(true);
+  const [delayMin, setDelayMin]                       = React.useState(1000);
+  const [delayMax, setDelayMax]                       = React.useState(4000);
+  const [webhookUrl, setWebhookUrl]                   = React.useState("");
+  const [notifyOnComplete, setNotifyOnComplete]       = React.useState(true);
+  const [notifyOnFail, setNotifyOnFail]               = React.useState(true);
+
+  function save() { /* TODO: persist */ }
+
+  return (
+    <div className={styles.agentPage}>
+      {/* ── Status banner ── */}
+      <div className={styles.agentStatusBanner}>
+        <div className={styles.agentStatusLeft}>
+          <span className={styles.agentStatusDot} />
+          <div>
+            <div className={styles.agentStatusTitle}>Agent Runner Status</div>
+            <div className={styles.agentStatusSub}>0 active jobs · Browserbase connected</div>
+          </div>
+        </div>
+        <button className={styles.agentTestBtn}>
+          <RefreshCw size={13}/> Test Connection
+        </button>
+      </div>
+
+      <div className={styles.agentGrid}>
+
+        {/* ── Browser / Session ── */}
+        <div className={styles.agentCard}>
+          <div className={styles.agentCardHeader}>
+            <span className={styles.agentCardIcon} style={{ background: "#dbeafe", color: "#2563eb" }}><Globe size={15}/></span>
+            <div>
+              <div className={styles.agentCardTitle}>Browser Session</div>
+              <div className={styles.agentCardSub}>Browserbase Chromium configuration</div>
+            </div>
+          </div>
+          <div className={styles.agentFields}>
+            <div className={styles.agentField}>
+              <label className={styles.agentLabel}>Browserbase Endpoint</label>
+              <input className={styles.agentInput} value={browserEndpoint} onChange={e => setBrowserEndpoint(e.target.value)} />
+            </div>
+            <div className={styles.agentField}>
+              <label className={styles.agentLabel}>API Key</label>
+              <div className={styles.agentInputRow}>
+                <input
+                  className={styles.agentInput}
+                  type={showApiKey ? "text" : "password"}
+                  value={apiKey}
+                  onChange={e => setApiKey(e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <button className={styles.agentIconBtn} onClick={() => setShowApiKey(v => !v)}>
+                  {showApiKey ? <EyeOff size={14}/> : <Eye size={14}/>}
+                </button>
+              </div>
+            </div>
+            <div className={styles.agentFieldRow}>
+              <div className={styles.agentField}>
+                <label className={styles.agentLabel}>Max Concurrent Jobs</label>
+                <input className={styles.agentInput} type="number" min={1} max={10} value={concurrentJobs} onChange={e => setConcurrentJobs(+e.target.value)} />
+              </div>
+              <div className={styles.agentField}>
+                <label className={styles.agentLabel}>Job Timeout (sec)</label>
+                <input className={styles.agentInput} type="number" min={60} max={3600} value={jobTimeout} onChange={e => setJobTimeout(+e.target.value)} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Proxy ── */}
+        <div className={styles.agentCard}>
+          <div className={styles.agentCardHeader}>
+            <span className={styles.agentCardIcon} style={{ background: "#ede9fe", color: "#7c3aed" }}><Sliders size={15}/></span>
+            <div>
+              <div className={styles.agentCardTitle}>Proxy Settings</div>
+              <div className={styles.agentCardSub}>Route agent traffic through proxy (optional)</div>
+            </div>
+            <label className={styles.agentToggle}>
+              <input type="checkbox" checked={proxyEnabled} onChange={e => setProxyEnabled(e.target.checked)} />
+              <span className={styles.agentToggleSlider} />
+            </label>
+          </div>
+          {proxyEnabled && (
+            <div className={styles.agentFields}>
+              <div className={styles.agentFieldRow}>
+                <div className={styles.agentField} style={{ flex: 2 }}>
+                  <label className={styles.agentLabel}>Proxy Host</label>
+                  <input className={styles.agentInput} value={proxyHost} onChange={e => setProxyHost(e.target.value)} placeholder="proxy.example.com" />
+                </div>
+                <div className={styles.agentField} style={{ flex: 1 }}>
+                  <label className={styles.agentLabel}>Port</label>
+                  <input className={styles.agentInput} value={proxyPort} onChange={e => setProxyPort(e.target.value)} placeholder="8080" />
+                </div>
+              </div>
+              <div className={styles.agentField}>
+                <label className={styles.agentLabel}>Username (optional)</label>
+                <input className={styles.agentInput} value={proxyUser} onChange={e => setProxyUser(e.target.value)} placeholder="proxyuser" />
+              </div>
+            </div>
+          )}
+          {!proxyEnabled && (
+            <div className={styles.agentDisabledMsg}>Enable to route agent browser traffic through a proxy server</div>
+          )}
+        </div>
+
+        {/* ── Behavior ── */}
+        <div className={styles.agentCard}>
+          <div className={styles.agentCardHeader}>
+            <span className={styles.agentCardIcon} style={{ background: "#dcfce7", color: "#16a34a" }}><Cpu size={15}/></span>
+            <div>
+              <div className={styles.agentCardTitle}>Execution Behavior</div>
+              <div className={styles.agentCardSub}>How the agent interacts with pages</div>
+            </div>
+          </div>
+          <div className={styles.agentFields}>
+            <label className={styles.agentCheckRow}>
+              <input type="checkbox" checked={humanDelay} onChange={e => setHumanDelay(e.target.checked)} />
+              <div>
+                <div className={styles.agentCheckLabel}>Human-like delay</div>
+                <div className={styles.agentCheckSub}>Random pause between actions to avoid bot detection</div>
+              </div>
+            </label>
+            {humanDelay && (
+              <div className={styles.agentFieldRow}>
+                <div className={styles.agentField}>
+                  <label className={styles.agentLabel}>Min delay (ms)</label>
+                  <input className={styles.agentInput} type="number" value={delayMin} onChange={e => setDelayMin(+e.target.value)} />
+                </div>
+                <div className={styles.agentField}>
+                  <label className={styles.agentLabel}>Max delay (ms)</label>
+                  <input className={styles.agentInput} type="number" value={delayMax} onChange={e => setDelayMax(+e.target.value)} />
+                </div>
+              </div>
+            )}
+            <label className={styles.agentCheckRow}>
+              <input type="checkbox" checked={retryOnFail} onChange={e => setRetryOnFail(e.target.checked)} />
+              <div>
+                <div className={styles.agentCheckLabel}>Retry on failure</div>
+                <div className={styles.agentCheckSub}>Automatically retry failed steps</div>
+              </div>
+            </label>
+            {retryOnFail && (
+              <div className={styles.agentField}>
+                <label className={styles.agentLabel}>Max retries</label>
+                <input className={styles.agentInput} type="number" min={1} max={5} value={maxRetries} onChange={e => setMaxRetries(+e.target.value)} style={{ maxWidth: 100 }} />
+              </div>
+            )}
+            <label className={styles.agentCheckRow}>
+              <input type="checkbox" checked={screenshotOnFail} onChange={e => setScreenshotOnFail(e.target.checked)} />
+              <div>
+                <div className={styles.agentCheckLabel}>Screenshot on failure</div>
+                <div className={styles.agentCheckSub}>Save screenshot when a step fails for debugging</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* ── Notifications / Webhook ── */}
+        <div className={styles.agentCard}>
+          <div className={styles.agentCardHeader}>
+            <span className={styles.agentCardIcon} style={{ background: "#fef3c7", color: "#c9a028" }}><Zap size={15}/></span>
+            <div>
+              <div className={styles.agentCardTitle}>Notifications & Webhook</div>
+              <div className={styles.agentCardSub}>Get notified when agent jobs complete</div>
+            </div>
+          </div>
+          <div className={styles.agentFields}>
+            <div className={styles.agentField}>
+              <label className={styles.agentLabel}>Webhook URL (optional)</label>
+              <input className={styles.agentInput} value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} placeholder="https://your-server.com/webhook" />
+              <span className={styles.agentFieldHint}>POST request sent with job result JSON when job completes</span>
+            </div>
+            <label className={styles.agentCheckRow}>
+              <input type="checkbox" checked={notifyOnComplete} onChange={e => setNotifyOnComplete(e.target.checked)} />
+              <div>
+                <div className={styles.agentCheckLabel}>Notify on completion</div>
+                <div className={styles.agentCheckSub}>Fire webhook when job succeeds</div>
+              </div>
+            </label>
+            <label className={styles.agentCheckRow}>
+              <input type="checkbox" checked={notifyOnFail} onChange={e => setNotifyOnFail(e.target.checked)} />
+              <div>
+                <div className={styles.agentCheckLabel}>Notify on failure</div>
+                <div className={styles.agentCheckSub}>Fire webhook when job fails or times out</div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.agentFooter}>
+        <button className={styles.agentSaveBtn} onClick={save}>
+          Save Agent Settings
+        </button>
+      </div>
     </div>
   );
 }

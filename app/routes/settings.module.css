@@ -1,64 +1,74 @@
 .page {
-  padding: var(--space-6) var(--space-7);
+  padding: 28px 32px;
   max-width: 1100px;
   margin: 0 auto;
+  min-height: 100vh;
+  background: var(--page-bg, #f5f4f0);
 }
 
 .pageHeader {
-  margin-bottom: var(--space-6);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
 }
 
 .pageTitle {
-  font-size: var(--font-size-fluid-2);
+  font-size: 22px;
   font-weight: 700;
   color: var(--color-neutral-12);
-  margin: 0 0 var(--space-2);
+  margin: 0 0 4px;
+  letter-spacing: -0.03em;
 }
 
 .pageSubtitle {
-  font-size: var(--font-size-1);
-  color: var(--color-neutral-10);
+  font-size: 12px;
+  color: var(--color-neutral-9);
   margin: 0;
 }
 
-/* Tab bar */
+/* ── Pill tab bar ── */
 .tabBar {
   display: flex;
-  gap: var(--space-1);
-  border-bottom: 1px solid var(--color-neutral-6);
-  margin-bottom: var(--space-6);
+  gap: 4px;
+  background: #fff;
+  border: 1px solid var(--color-neutral-4, #e7e8ec);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 24px;
   overflow-x: auto;
+  flex-shrink: 0;
 }
 
 .tabBtn {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
+  gap: 6px;
+  padding: 7px 14px;
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--color-neutral-10);
-  font-size: var(--font-size-0);
-  font-weight: 500;
+  border-radius: 7px;
+  color: var(--color-neutral-9);
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: color 0.15s, border-color 0.15s;
-  margin-bottom: -1px;
+  transition: all 0.12s;
 }
 
 .tabBtn:hover {
+  background: var(--color-neutral-3);
   color: var(--color-neutral-12);
 }
 
 .tabBtnActive {
-  color: var(--color-accent-11);
-  border-bottom-color: var(--color-accent-9);
+  background: #1c1c1e;
+  color: #fff;
 }
 
 .tabBtnIcon {
-  width: 15px;
-  height: 15px;
+  width: 13px;
+  height: 13px;
   flex-shrink: 0;
 }
 
@@ -1288,4 +1298,122 @@
   .logRow span:nth-child(7) {
     display: none;
   }
+}
+
+/* ══ Agent Settings Tab ══════════════════════════════════════════ */
+.agentPage { display: flex; flex-direction: column; gap: 20px; }
+
+.agentStatusBanner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  background: #fff; border: 1px solid var(--color-neutral-4, #e7e8ec);
+  border-radius: 12px;
+}
+.agentStatusLeft { display: flex; align-items: center; gap: 12px; }
+.agentStatusDot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
+  flex-shrink: 0;
+}
+.agentStatusTitle { font-size: 13px; font-weight: 600; color: var(--color-neutral-12); }
+.agentStatusSub { font-size: 11px; color: var(--color-neutral-9); margin-top: 1px; }
+.agentTestBtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; font-size: 12px; font-weight: 600;
+  border: 1px solid var(--color-neutral-4); border-radius: 8px;
+  background: #fff; color: var(--color-neutral-10); cursor: pointer;
+  transition: all 0.12s;
+}
+.agentTestBtn:hover { background: var(--color-neutral-3); color: var(--color-neutral-12); }
+
+.agentGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.agentCard {
+  background: #fff;
+  border: 1px solid var(--color-neutral-4, #e7e8ec);
+  border-radius: 14px;
+  padding: 18px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.agentCardHeader {
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.agentCardIcon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.agentCardTitle { font-size: 13px; font-weight: 700; color: var(--color-neutral-12); }
+.agentCardSub { font-size: 11px; color: var(--color-neutral-9); margin-top: 2px; }
+
+.agentFields { display: flex; flex-direction: column; gap: 10px; }
+.agentFieldRow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.agentField { display: flex; flex-direction: column; gap: 4px; }
+.agentLabel {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--color-neutral-9);
+}
+.agentInput {
+  padding: 8px 10px; font-size: 12px;
+  border: 1px solid var(--color-neutral-4); border-radius: 7px;
+  background: #fff; color: var(--color-neutral-12);
+  outline: none; width: 100%; box-sizing: border-box;
+  transition: border-color 0.12s;
+}
+.agentInput:focus { border-color: #1c1c1e; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
+.agentInputRow { display: flex; gap: 6px; align-items: stretch; }
+.agentIconBtn {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; border: 1px solid var(--color-neutral-4); border-radius: 7px;
+  background: #fff; color: var(--color-neutral-9); cursor: pointer;
+  flex-shrink: 0; transition: all 0.12s;
+}
+.agentIconBtn:hover { background: var(--color-neutral-3); }
+.agentFieldHint { font-size: 10px; color: var(--color-neutral-9); }
+.agentDisabledMsg {
+  font-size: 12px; color: var(--color-neutral-9); font-style: italic;
+  padding: 10px; background: var(--color-neutral-2); border-radius: 7px; text-align: center;
+}
+
+/* Toggle switch */
+.agentToggle { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; margin-left: auto; }
+.agentToggle input { opacity: 0; width: 0; height: 0; }
+.agentToggleSlider {
+  position: absolute; cursor: pointer; inset: 0;
+  background: var(--color-neutral-5); border-radius: 99px;
+  transition: 0.2s;
+}
+.agentToggleSlider:before {
+  content: ""; position: absolute;
+  width: 16px; height: 16px; left: 3px; bottom: 3px;
+  background: white; border-radius: 50%; transition: 0.2s;
+}
+.agentToggle input:checked + .agentToggleSlider { background: #1c1c1e; }
+.agentToggle input:checked + .agentToggleSlider:before { transform: translateX(16px); }
+
+/* Checkbox rows */
+.agentCheckRow {
+  display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+  padding: 8px; border-radius: 8px; transition: background 0.1s;
+}
+.agentCheckRow:hover { background: var(--color-neutral-2); }
+.agentCheckRow input { margin-top: 2px; accent-color: #1c1c1e; flex-shrink: 0; }
+.agentCheckLabel { font-size: 12px; font-weight: 600; color: var(--color-neutral-12); }
+.agentCheckSub { font-size: 11px; color: var(--color-neutral-9); margin-top: 1px; }
+
+.agentFooter { display: flex; justify-content: flex-end; }
+.agentSaveBtn {
+  padding: 9px 20px; font-size: 13px; font-weight: 700;
+  background: #1c1c1e; color: #fff; border: none;
+  border-radius: 8px; cursor: pointer; transition: background 0.12s;
+}
+.agentSaveBtn:hover { background: #2e2e30; }
+
+@media (max-width: 800px) {
+  .agentGrid { grid-template-columns: 1fr; }
 }
